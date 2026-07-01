@@ -92,6 +92,15 @@
       100% { transform: translateX(300%) skewX(-20deg); }
     }
     
+    @keyframes ring-pulse {
+      0%, 100% { box-shadow: 0 0 0 4px rgba(250, 204, 21, 1); }
+      50% { box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.3); }
+    }
+    .animate-ring-pulse {
+      animation: ring-pulse 1s ease-in-out infinite;
+      z-index: 50;
+    }
+    
     .custom-scrollbar::-webkit-scrollbar {
         width: 6px;
     }
@@ -117,7 +126,6 @@
       </svg>
     ));
 
-    const Play = (props) => <IconSVG {...props}><polygon points="5 3 19 12 5 21 5 3"></polygon></IconSVG>;
     const Book = (props) => <IconSVG {...props}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></IconSVG>;
     const Trophy = (props) => <IconSVG {...props}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2Z"/></IconSVG>;
     const RefreshCw = (props) => <IconSVG {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></IconSVG>;
@@ -175,6 +183,14 @@
             gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
             osc.start(now); osc.stop(now + 0.25);
             break;
+          case 'tick':
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(1200, now);
+            osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+            gainNode.gain.setValueAtTime(0.05, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+            osc.start(now); osc.stop(now + 0.05);
+            break;
         }
       } catch (e) {
         console.error("Audio playback error", e);
@@ -183,11 +199,11 @@
 
     // --- 데이터 정의 ---
     const WORD_DB = [
-      { id: 'w1', word: '사과', cat: '과일', icon: '🍎', stage: 1, path: ['생물', '식물', '과일'] },
-      { id: 'w2', word: '바나나', cat: '과일', icon: '🍌', stage: 1, path: ['생물', '식물', '과일'] },
-      { id: 'w3', word: '포도', cat: '과일', icon: '🍇', stage: 1, path: ['생물', '식물', '과일'] },
-      { id: 'w4', word: '딸기', cat: '과일', icon: '🍓', stage: 1, path: ['생물', '식물', '과일'] },
-      { id: 'w5', word: '수박', cat: '과일', icon: '🍉', stage: 1, path: ['생물', '식물', '과일'] },
+      { id: 'w1', word: '사과', cat: '과일', icon: '🍎', stage: 1, path: ['생물', '과일'] },
+      { id: 'w2', word: '바나나', cat: '과일', icon: '🍌', stage: 1, path: ['생물', '과일'] },
+      { id: 'w3', word: '포도', cat: '과일', icon: '🍇', stage: 1, path: ['생물', '과일'] },
+      { id: 'w4', word: '딸기', cat: '과일', icon: '🍓', stage: 1, path: ['생물', '과일'] },
+      { id: 'w5', word: '수박', cat: '과일', icon: '🍉', stage: 1, path: ['생물', '과일'] },
       { id: 'w6', word: '강아지', cat: '동물', icon: '🐶', stage: 1, path: ['생물', '동물'] },
       { id: 'w7', word: '고양이', cat: '동물', icon: '🐱', stage: 1, path: ['생물', '동물'] },
       { id: 'w8', word: '사자', cat: '동물', icon: '🦁', stage: 1, path: ['생물', '동물'] },
@@ -198,22 +214,28 @@
       { id: 'w13', word: '기차', cat: '탈것', icon: '🚂', stage: 1, path: ['무생물', '탈것'] },
       { id: 'w14', word: '배', cat: '탈것', icon: '🚢', stage: 1, path: ['무생물', '탈것'] },
       { id: 'w15', word: '자전거', cat: '탈것', icon: '🚲', stage: 1, path: ['무생물', '탈것'] },
-      { id: 'w16', word: '장미', cat: '식물', icon: '🌹', stage: 1, path: ['생물', '식물', '꽃'] },
-      { id: 'w17', word: '나무', cat: '식물', icon: '🌳', stage: 1, path: ['생물', '식물', '나무'] },
-      { id: 'w18', word: '새싹', cat: '식물', icon: '🌱', stage: 1, path: ['생물', '식물'] },
-      { id: 'w19', word: '해바라기', cat: '식물', icon: '🌻', stage: 1, path: ['생물', '식물', '꽃'] },
-      { id: 'w20', word: '튤립', cat: '식물', icon: '🌷', stage: 1, path: ['생물', '식물', '꽃'] },
+      
+      { id: 'w16', word: '장미', cat: '꽃', icon: '🌹', stage: 1, path: ['생물', '꽃'] },
+      { id: 'w17', word: '해바라기', cat: '꽃', icon: '🌻', stage: 1, path: ['생물', '꽃'] },
+      { id: 'w18', word: '튤립', cat: '꽃', icon: '🌷', stage: 1, path: ['생물', '꽃'] },
+      { id: 'w19', word: '무궁화', cat: '꽃', icon: '🌺', stage: 1, path: ['생물', '꽃'] },
+      { id: 'w20', word: '백합', cat: '꽃', icon: '💮', stage: 1, path: ['생물', '꽃'] },
+      { id: 'w121', word: '소나무', cat: '나무', icon: '🌲', stage: 1, path: ['생물', '나무'] },
+      { id: 'w122', word: '은행나무', cat: '나무', icon: '🍂', stage: 1, path: ['생물', '나무'] },
+      { id: 'w123', word: '단풍나무', cat: '나무', icon: '🍁', stage: 1, path: ['생물', '나무'] },
+      { id: 'w124', word: '대나무', cat: '나무', icon: '🎍', stage: 1, path: ['생물', '나무'] },
+      { id: 'w125', word: '야자수', cat: '나무', icon: '🌴', stage: 1, path: ['생물', '나무'] },
 
-      { id: 'w21', word: '연필', cat: '학용품', icon: '✏️', stage: 2, path: ['무생물', '물건', '학용품'] },
-      { id: 'w22', word: '지우개', cat: '학용품', icon: '🧽', stage: 2, path: ['무생물', '물건', '학용품'] },
-      { id: 'w23', word: '공책', cat: '학용품', icon: '📓', stage: 2, path: ['무생물', '물건', '학용품'] },
-      { id: 'w24', word: '가위', cat: '학용품', icon: '✂️', stage: 2, path: ['무생물', '물건', '학용품'] },
-      { id: 'w25', word: '자', cat: '학용품', icon: '📏', stage: 2, path: ['무생물', '물건', '학용품'] },
-      { id: 'w26', word: '냉장고', cat: '가전제품', icon: '🧊', stage: 2, path: ['무생물', '기계', '가전제품'] },
-      { id: 'w27', word: 'TV', cat: '가전제품', icon: '📺', stage: 2, path: ['무생물', '기계', '가전제품'] },
-      { id: 'w28', word: '세탁기', cat: '가전제품', icon: '🧺', stage: 2, path: ['무생물', '기계', '가전제품'] },
-      { id: 'w29', word: '에어컨', cat: '가전제품', icon: '❄️', stage: 2, path: ['무생물', '기계', '가전제품'] },
-      { id: 'w30', word: '청소기', cat: '가전제품', icon: '🧹', stage: 2, path: ['무생물', '기계', '가전제품'] },
+      { id: 'w21', word: '연필', cat: '학용품', icon: '✏️', stage: 2, path: ['무생물', '학용품'] },
+      { id: 'w22', word: '지우개', cat: '학용품', icon: '🧽', stage: 2, path: ['무생물', '학용품'] },
+      { id: 'w23', word: '공책', cat: '학용품', icon: '📓', stage: 2, path: ['무생물', '학용품'] },
+      { id: 'w24', word: '가위', cat: '학용품', icon: '✂️', stage: 2, path: ['무생물', '학용품'] },
+      { id: 'w25', word: '자', cat: '학용품', icon: '📏', stage: 2, path: ['무생물', '학용품'] },
+      { id: 'w26', word: '냉장고', cat: '가전제품', icon: '🧊', stage: 2, path: ['무생물', '가전제품'] },
+      { id: 'w27', word: 'TV', cat: '가전제품', icon: '📺', stage: 2, path: ['무생물', '가전제품'] },
+      { id: 'w28', word: '세탁기', cat: '가전제품', icon: '🧺', stage: 2, path: ['무생물', '가전제품'] },
+      { id: 'w29', word: '에어컨', cat: '가전제품', icon: '❄️', stage: 2, path: ['무생물', '가전제품'] },
+      { id: 'w30', word: '청소기', cat: '가전제품', icon: '🧹', stage: 2, path: ['무생물', '가전제품'] },
       { id: 'w31', word: '경찰', cat: '직업', icon: '👮', stage: 2, path: ['사람', '직업'] },
       { id: 'w32', word: '의사', cat: '직업', icon: '🧑‍⚕️', stage: 2, path: ['사람', '직업'] },
       { id: 'w33', word: '소방관', cat: '직업', icon: '👨‍🚒', stage: 2, path: ['사람', '직업'] },
@@ -230,11 +252,11 @@
       { id: 'w39', word: '치킨', cat: '음식', icon: '🍗', stage: 2, path: ['무생물', '음식'] },
       { id: 'w40', word: '아이스크림', cat: '음식', icon: '🍦', stage: 2, path: ['무생물', '음식'] },
 
-      { id: 'w41', word: '피아노', cat: '악기', icon: '🎹', stage: 3, path: ['무생물', '물건', '악기'] },
-      { id: 'w42', word: '기타', cat: '악기', icon: '🎸', stage: 3, path: ['무생물', '물건', '악기'] },
-      { id: 'w43', word: '바이올린', cat: '악기', icon: '🎻', stage: 3, path: ['무생물', '물건', '악기'] },
-      { id: 'w44', word: '드럼', cat: '악기', icon: '🥁', stage: 3, path: ['무생물', '물건', '악기'] },
-      { id: 'w45', word: '트럼펫', cat: '악기', icon: '🎺', stage: 3, path: ['무생물', '물건', '악기'] },
+      { id: 'w41', word: '피아노', cat: '악기', icon: '🎹', stage: 3, path: ['무생물', '악기'] },
+      { id: 'w42', word: '기타', cat: '악기', icon: '🎸', stage: 3, path: ['무생물', '악기'] },
+      { id: 'w43', word: '바이올린', cat: '악기', icon: '🎻', stage: 3, path: ['무생물', '악기'] },
+      { id: 'w44', word: '드럼', cat: '악기', icon: '🥁', stage: 3, path: ['무생물', '악기'] },
+      { id: 'w45', word: '트럼펫', cat: '악기', icon: '🎺', stage: 3, path: ['무생물', '악기'] },
       { id: 'w46', word: '축구', cat: '스포츠', icon: '⚽', stage: 3, path: ['활동', '스포츠'] },
       { id: 'w47', word: '농구', cat: '스포츠', icon: '🏀', stage: 3, path: ['활동', '스포츠'] },
       { id: 'w48', word: '야구', cat: '스포츠', icon: '⚾', stage: 3, path: ['활동', '스포츠'] },
@@ -261,21 +283,21 @@
       { id: 'w119', word: '일본', cat: '나라', icon: '🇯🇵', stage: 3, path: ['개념', '나라'] },
       { id: 'w120', word: '영국', cat: '나라', icon: '🇬🇧', stage: 3, path: ['개념', '나라'] },
 
-      { id: 'w61', word: '호랑이', cat: '포유류', icon: '🐯', stage: 4, path: ['생물', '동물', '포유류'] },
-      { id: 'w62', word: '곰', cat: '포유류', icon: '🐻', stage: 4, path: ['생물', '동물', '포유류'] },
-      { id: 'w63', word: '토끼', cat: '포유류', icon: '🐰', stage: 4, path: ['생물', '동물', '포유류'] },
-      { id: 'w64', word: '다람쥐', cat: '포유류', icon: '🐿️', stage: 4, path: ['생물', '동물', '포유류'] },
-      { id: 'w65', word: '여우', cat: '포유류', icon: '🦊', stage: 4, path: ['생물', '동물', '포유류'] },
-      { id: 'w66', word: '참새', cat: '조류', icon: '🐦', stage: 4, path: ['생물', '동물', '조류'] },
-      { id: 'w67', word: '독수리', cat: '조류', icon: '🦅', stage: 4, path: ['생물', '동물', '조류'] },
-      { id: 'w68', word: '펭귄', cat: '조류', icon: '🐧', stage: 4, path: ['생물', '동물', '조류'] },
-      { id: 'w69', word: '타조', cat: '조류', icon: '🦤', stage: 4, path: ['생물', '동물', '조류'] },
-      { id: 'w70', word: '올빼미', cat: '조류', icon: '🦉', stage: 4, path: ['생물', '동물', '조류'] },
-      { id: 'w71', word: '상어', cat: '어류', icon: '🦈', stage: 4, path: ['생물', '동물', '어류'] },
-      { id: 'w72', word: '고등어', cat: '어류', icon: '🐟', stage: 4, path: ['생물', '동물', '어류'] },
-      { id: 'w73', word: '연어', cat: '어류', icon: '🍣', stage: 4, path: ['생물', '동물', '어류'] },
-      { id: 'w74', word: '복어', cat: '어류', icon: '🐡', stage: 4, path: ['생물', '동물', '어류'] },
-      { id: 'w75', word: '열대어', cat: '어류', icon: '🐠', stage: 4, path: ['생물', '동물', '어류'] },
+      { id: 'w61', word: '호랑이', cat: '포유류', icon: '🐯', stage: 4, path: ['생물', '포유류'] },
+      { id: 'w62', word: '곰', cat: '포유류', icon: '🐻', stage: 4, path: ['생물', '포유류'] },
+      { id: 'w63', word: '토끼', cat: '포유류', icon: '🐰', stage: 4, path: ['생물', '포유류'] },
+      { id: 'w64', word: '다람쥐', cat: '포유류', icon: '🐿️', stage: 4, path: ['생물', '포유류'] },
+      { id: 'w65', word: '여우', cat: '포유류', icon: '🦊', stage: 4, path: ['생물', '포유류'] },
+      { id: 'w66', word: '참새', cat: '조류', icon: '🐦', stage: 4, path: ['생물', '조류'] },
+      { id: 'w67', word: '독수리', cat: '조류', icon: '🦅', stage: 4, path: ['생물', '조류'] },
+      { id: 'w68', word: '펭귄', cat: '조류', icon: '🐧', stage: 4, path: ['생물', '조류'] },
+      { id: 'w69', word: '타조', cat: '조류', icon: '🦤', stage: 4, path: ['생물', '조류'] },
+      { id: 'w70', word: '올빼미', cat: '조류', icon: '🦉', stage: 4, path: ['생물', '조류'] },
+      { id: 'w71', word: '상어', cat: '어류', icon: '🦈', stage: 4, path: ['생물', '어류'] },
+      { id: 'w72', word: '고등어', cat: '어류', icon: '🐟', stage: 4, path: ['생물', '어류'] },
+      { id: 'w73', word: '연어', cat: '어류', icon: '🍣', stage: 4, path: ['생물', '어류'] },
+      { id: 'w74', word: '복어', cat: '어류', icon: '🐡', stage: 4, path: ['생물', '어류'] },
+      { id: 'w75', word: '열대어', cat: '어류', icon: '🐠', stage: 4, path: ['생물', '어류'] },
       { id: 'w76', word: '나비', cat: '곤충', icon: '🦋', stage: 4, path: ['생물', '곤충'] },
       { id: 'w77', word: '개미', cat: '곤충', icon: '🐜', stage: 4, path: ['생물', '곤충'] },
       { id: 'w78', word: '무당벌레', cat: '곤충', icon: '🐞', stage: 4, path: ['생물', '곤충'] },
@@ -287,11 +309,11 @@
       { id: 'w114', word: '장수풍뎅이', cat: '곤충', icon: '🪲', stage: 4, path: ['생물', '곤충'] },
       { id: 'w115', word: '사마귀', cat: '곤충', icon: '🌿', stage: 4, path: ['생물', '곤충'] },
 
-      { id: 'w81', word: '뱀', cat: '파충류', icon: '🐍', stage: 5, path: ['생물', '동물', '파충류'] },
-      { id: 'w82', word: '거북이', cat: '파충류', icon: '🐢', stage: 5, path: ['생물', '동물', '파충류'] },
-      { id: 'w83', word: '도마뱀', cat: '파충류', icon: '🦎', stage: 5, path: ['생물', '동물', '파충류'] },
-      { id: 'w84', word: '악어', cat: '파충류', icon: '🐊', stage: 5, path: ['생물', '동물', '파충류'] },
-      { id: 'w85', word: '공룡', cat: '파충류', icon: '🦖', stage: 5, path: ['생물', '동물', '파충류'] },
+      { id: 'w81', word: '뱀', cat: '파충류', icon: '🐍', stage: 5, path: ['생물', '파충류'] },
+      { id: 'w82', word: '거북이', cat: '파충류', icon: '🐢', stage: 5, path: ['생물', '파충류'] },
+      { id: 'w83', word: '도마뱀', cat: '파충류', icon: '🦎', stage: 5, path: ['생물', '파충류'] },
+      { id: 'w84', word: '악어', cat: '파충류', icon: '🐊', stage: 5, path: ['생물', '파충류'] },
+      { id: 'w85', word: '공룡', cat: '파충류', icon: '🦖', stage: 5, path: ['생물', '파충류'] },
       { id: 'w86', word: '빨강', cat: '색깔', icon: '🔴', stage: 5, path: ['개념', '색깔'] },
       { id: 'w87', word: '파랑', cat: '색깔', icon: '🔵', stage: 5, path: ['개념', '색깔'] },
       { id: 'w88', word: '노랑', cat: '색깔', icon: '🟡', stage: 5, path: ['개념', '색깔'] },
@@ -302,11 +324,11 @@
       { id: 'w93', word: '화남', cat: '감정', icon: '😡', stage: 5, path: ['개념', '감정'] },
       { id: 'w94', word: '놀람', cat: '감정', icon: '😲', stage: 5, path: ['개념', '감정'] },
       { id: 'w95', word: '공포', cat: '감정', icon: '😱', stage: 5, path: ['개념', '감정'] },
-      { id: 'w96', word: '티셔츠', cat: '옷', icon: '👕', stage: 5, path: ['무생물', '물건', '옷'] },
-      { id: 'w97', word: '바지', cat: '옷', icon: '👖', stage: 5, path: ['무생물', '물건', '옷'] },
-      { id: 'w98', word: '원피스', cat: '옷', icon: '👗', stage: 5, path: ['무생물', '물건', '옷'] },
-      { id: 'w99', word: '양말', cat: '옷', icon: '🧦', stage: 5, path: ['무생물', '물건', '옷'] },
-      { id: 'w100', word: '모자', cat: '옷', icon: '🧢', stage: 5, path: ['무생물', '물건', '옷'] },
+      { id: 'w96', word: '티셔츠', cat: '옷', icon: '👕', stage: 5, path: ['무생물', '옷'] },
+      { id: 'w97', word: '바지', cat: '옷', icon: '👖', stage: 5, path: ['무생물', '옷'] },
+      { id: 'w98', word: '원피스', cat: '옷', icon: '👗', stage: 5, path: ['무생물', '옷'] },
+      { id: 'w99', word: '양말', cat: '옷', icon: '🧦', stage: 5, path: ['무생물', '옷'] },
+      { id: 'w100', word: '모자', cat: '옷', icon: '🧢', stage: 5, path: ['무생물', '옷'] },
     ];
 
     const STAGE_INFO = {
@@ -356,21 +378,19 @@
         <div className="flex-1 flex flex-col items-center justify-between p-6 text-center relative h-full">
           <button
             onClick={toggleBgm}
-            className="absolute top-4 right-4 p-3 bg-white/20 hover:bg-white/30 rounded-full text-white backdrop-blur-sm transition-all shadow-md z-50"
+            className="absolute top-4 right-4 p-3 bg-white/20 hover:bg-white/30 rounded-full text-white backdrop-blur-sm transition-all shadow-md z-50 border border-white/30"
           >
             {bgmEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />}
           </button>
 
-          {/* 나무 이미지를 더 위로 올리고 그림자를 다듬어 계단 현상 방지 */}
           <div className="w-full flex flex-col items-center -mt-8 shrink-0 relative z-0">
             <img 
               src="https://raw.githubusercontent.com/KOKIM12/k-voca-solitaire/refs/heads/main/tree.png" 
               alt="개념 나무" 
-              className="w-[22rem] h-[22rem] object-contain -mb-8" 
+              className="w-[22rem] h-[22rem] drop-shadow-md object-contain -mb-8" 
             />
           </div>
           
-          {/* 타이틀을 위로 올려 여백을 최소화 */}
           <div className="w-full shrink-0 relative z-10 mb-4">
             <h1 className="text-6xl text-yellow-300 drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)] font-title leading-tight tracking-wide mb-1">
               <span className="animate-bounce-char" style={{ animationDelay: '0s' }}>단</span>
@@ -383,9 +403,8 @@
             <h2 className="text-3xl text-white/95 drop-shadow-md font-title tracking-widest mb-3 -mt-2">
               개념 나무 키우기
             </h2>
-            {/* 얇고 작은 폰트 적용 (font-regular, text-xs) */}
-            <div className="text-white/90 text-xs font-regular bg-black/20 px-4 py-1.5 rounded-full border border-white/10 inline-block tracking-wider">
-              개념 도감을 모아 나무를 키워 보세요!
+            <div className="text-white/90 text-xs font-medium bg-black/20 px-4 py-1.5 rounded-full border border-white/10 inline-block tracking-wider" style={{ fontWeight: 400 }}>
+              🌱 개념 도감을 모아 나무를 키워 보세요!
             </div>
           </div>
           
@@ -394,7 +413,7 @@
               onClick={onStart}
               className="w-full py-4 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-2xl text-xl font-bold shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
             >
-              <Play fill="currentColor" /> 게임 시작
+              게임 시작
             </button>
             
             <div className="flex gap-3">
@@ -455,7 +474,7 @@
       );
     });
 
-    function GameScreen({ stage, onGameEnd, onBack, unlockWord }) {
+    function GameScreen({ stage, onGameEnd, onBack, unlockWord, bgmEnabled, toggleBgm }) {
       const [columns, setColumns] = useState([]); 
       const [categories, setCategories] = useState([]); 
       const [foundations, setFoundations] = useState({}); 
@@ -476,8 +495,17 @@
 
       const initializeGame = useCallback(() => {
         setIsInitialized(false);
-        const stageWords = shuffleArray(WORD_DB.filter(w => w.stage === stage));
-        const stageCats = shuffleArray([...new Set(stageWords.map(w => w.cat))]);
+        let stageWords = shuffleArray(WORD_DB.filter(w => w.stage === stage));
+        let stageCats = shuffleArray([...new Set(stageWords.map(w => w.cat))]);
+        
+        // 1단계: 3개 카테고리(15장), 2단계: 4개 카테고리(20장), 3단계 이상: 5개 카테고리
+        let catLimit = 5;
+        if (stage === 1) catLimit = 3;
+        else if (stage === 2) catLimit = 4;
+        
+        stageCats = stageCats.slice(0, catLimit);
+        // 선택된 카테고리에 해당하는 카드만 필터링
+        stageWords = stageWords.filter(w => stageCats.includes(w.cat));
         
         setCategories(stageCats);
         setHintedCards(new Set());
@@ -515,6 +543,9 @@
               setGameState('lost');
               clearInterval(timer);
               return 0;
+            }
+            if (prev <= 11) {
+              playSound('tick');
             }
             return prev - 1;
           });
@@ -661,21 +692,26 @@
           <div className="fixed top-0 left-0 w-full z-20" onClick={(e) => e.stopPropagation()}>
             <div className="absolute inset-0 bg-white/10 backdrop-blur-md shadow-sm border-b border-white/10"></div>
             <div className="relative w-full max-w-md mx-auto px-4 py-3 flex items-center justify-between text-white">
-              <button onClick={() => { playSound('click'); onBack(); }} className="p-3 text-white/90 hover:text-white bg-white/20 hover:bg-white/30 rounded-full transition-colors active:scale-90">
-                <Home size={22} />
-              </button>
+              <div className="flex items-center gap-2">
+                <button onClick={() => { playSound('click'); onBack(); }} className="p-3 text-white/90 hover:text-white bg-white/20 hover:bg-white/30 rounded-full transition-colors active:scale-90 border border-white/30 shadow-sm">
+                  <Home size={22} />
+                </button>
+                <button onClick={toggleBgm} className="p-3 text-white/90 hover:text-white bg-white/20 hover:bg-white/30 rounded-full transition-colors active:scale-90 border border-white/30 shadow-sm">
+                  {bgmEnabled ? <Volume2 size={22} /> : <VolumeX size={22} />}
+                </button>
+              </div>
               
-              <div className="flex flex-col items-center">
-                <span className="text-sm font-bold text-yellow-300 opacity-90 tracking-wider mb-1">{stage} 단계</span>
-                <div className="flex items-center gap-1 drop-shadow-md">
-                  <Trophy size={18} className="text-yellow-400" />
-                  <span className="font-extrabold text-2xl leading-none mt-1">{score}</span>
+              <div className="flex flex-col items-center px-4 py-1.5 rounded-2xl">
+                <span className="drop-shadow-xl text-[14px] font-bold text-yellow-300 tracking-wider mb-0.5">{stage}단계</span>
+                <div className="flex items-center gap-1.5">
+                  <Trophy size={16} className="drop-shadow-xl text-yellow-300" />
+                  <span className="drop-shadow-xl font-extrabold text-2xl leading-none text-white">{score}</span>
                 </div>
               </div>
               
-              <div className={`flex items-center gap-1 font-bold ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-white'}`}>
-                <Clock size={18} />
-                <span className="w-10 text-right drop-shadow-md text-2xl leading-none mt-1">{timeLeft}</span>
+              <div className={`flex items-center gap-1.5 font-bold px-4 py-2 rounded-2xl ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-yellow-400'}`}>
+                <Clock size={16} className={timeLeft <= 10 ? 'text-red-400' : 'text-yellow-300'} />
+                <span className={`w-10 text-center text-2xl leading-none ${timeLeft <= 10 ? 'text-red-400' : 'text-white'}`}>{timeLeft}</span>
               </div>
             </div>
           </div>
@@ -694,7 +730,7 @@
           </div>
 
           <div className="px-4 py-2 z-10 shrink-0" onClick={(e) => e.stopPropagation()}>
-            <div className="flex flex-wrap justify-center gap-2 max-w-md mx-auto w-full">
+            <div className="flex flex-wrap justify-center gap-3 max-w-md mx-auto w-full">
               {categories.map((cat) => {
                 const stackedCards = foundations[cat] || [];
                 return (
@@ -705,13 +741,13 @@
                     onDrop={(e) => handleDrop(e, cat)}
                     onClick={() => handleCategoryClick(cat)}
                     className={`
-                      relative flex flex-col items-center justify-end h-28 rounded-xl border-2 transition-all shadow-inner overflow-visible w-[22%] sm:w-[18%] min-w-[70px]
-                      ${hintActive?.cat === cat ? 'border-yellow-400 bg-yellow-400/30 animate-pulse ring-4 ring-yellow-400' : 'border-white/20 bg-black/10 hover:bg-white/10'}
+                      relative flex flex-col items-center justify-end w-[23%] aspect-[2/2.5] rounded-xl border-2 transition-all shadow-inner overflow-visible
+                      ${hintActive?.cat === cat ? 'bg-black/10 animate-ring-pulse' : 'border-white/20 bg-black/10 hover:bg-white/10'}
                       ${selectedInfo ? 'border-dashed border-white/60 cursor-pointer bg-white/5' : 'border-solid'}
                     `}
                   >
                     <div className="absolute top-1 w-full text-center z-40">
-                      <span className="text-xs font-bold bg-black/60 text-white/95 px-2 py-0.5 rounded backdrop-blur-sm shadow-sm">{cat}</span>
+                      <span className="text-[11px] font-bold bg-black/60 text-white/95 px-2 py-0.5 rounded backdrop-blur-sm shadow-sm">{cat}</span>
                     </div>
                     
                     {stackedCards.map((card, idx) => {
@@ -719,10 +755,9 @@
                       return (
                         <div 
                           key={card.id + idx} 
-                          className="absolute w-[80%] aspect-[2/2.5] bg-white rounded-xl border border-slate-300 shadow-[0_2px_4px_rgba(0,0,0,0.3)] flex flex-col items-center justify-center animate-deal"
+                          className="absolute w-full h-full bg-white rounded-xl border border-slate-300 shadow-[0_2px_4px_rgba(0,0,0,0.3)] flex flex-col items-center justify-center animate-deal"
                           style={{
                             transform: `translate(${idx * 2}px, ${idx * -3}px)`,
-                            bottom: '5%',
                             zIndex: 10 + idx 
                           }}
                         >
@@ -790,13 +825,13 @@
                           absolute w-full aspect-[2/2.5] rounded-xl shadow-[0_4px_8px_rgba(0,0,0,0.4)] 
                           flex flex-col items-center justify-center bg-white select-none transition-all duration-200 animate-deal
                           ${isBottom ? 'cursor-grab active:cursor-grabbing border-b-4 border-slate-300 hover:brightness-105' : 'brightness-90 border-b-2 border-slate-200'}
-                          ${isSelected ? 'ring-4 ring-yellow-400 -translate-y-3 !brightness-110 z-10' : ''}
-                          ${isWrong ? 'animate-shake bg-red-100 ring-4 ring-red-500 z-10' : ''}
-                          ${isHinted ? 'ring-4 ring-yellow-400 animate-pulse !brightness-110 z-10' : ''}
+                          ${isSelected ? 'ring-4 ring-yellow-400 -translate-y-3 !brightness-110' : ''}
+                          ${isWrong ? 'animate-shake bg-red-100 ring-4 ring-red-500' : ''}
+                          ${isHinted ? 'animate-ring-pulse !brightness-110' : ''}
                         `}
                         style={{
                           top: `calc(${cardIndex} * clamp(25px, 4vh, 45px))`, 
-                          zIndex: cardIndex,
+                          zIndex: isHinted ? 40 : (isSelected ? 30 : cardIndex),
                           animationDelay: `${(colIndex * 2 + cardIndex) * 0.03}s` 
                         }}
                       >
@@ -892,7 +927,7 @@
         <div className="flex-1 flex flex-col bg-slate-50 h-full relative w-full pt-16">
           <div className="fixed top-0 left-0 w-full bg-[#187332] z-20">
             <div className="w-full max-w-md mx-auto px-6 py-4 flex items-center justify-between text-white shadow-md rounded-b-2xl md:rounded-none">
-              <button onClick={() => { playSound('click'); onBack(); }} className="p-3 bg-white/20 rounded-full hover:bg-white/30 transition-colors active:scale-90">
+              <button onClick={() => { playSound('click'); onBack(); }} className="p-3 bg-white/20 rounded-full hover:bg-white/30 transition-colors active:scale-90 border border-white/30 shadow-sm">
                 <Home size={22} />
               </button>
               <h2 className="text-3xl font-title flex items-center gap-2 pt-1 text-yellow-300">
@@ -906,8 +941,8 @@
 
           <div className="p-4 overflow-y-auto flex-1 custom-scrollbar w-full max-w-md mx-auto mt-4">
             <div className="bg-white rounded-3xl shadow-sm p-6 border border-slate-100 flex flex-col items-center justify-center mb-6">
-              <div className="relative overflow-hidden w-32 h-32 bg-gradient-to-br from-emerald-50 to-green-100 rounded-full flex items-center justify-center shadow-inner mb-4">
-                <div className="text-7xl z-10">{treeStage.icon}</div>
+              <div className="relative overflow-hidden w-28 h-28 bg-yellow-300 rounded-full flex items-center justify-center shadow-inner mb-4">
+                <div className="text-5xl z-10 drop-shadow-sm">{treeStage.icon}</div>
                 <div className="absolute inset-0 z-20 pointer-events-none animate-[shine_3s_infinite_ease-in-out] bg-gradient-to-r from-transparent via-white/80 to-transparent w-1/2 h-full"></div>
               </div>
               <div className="text-2xl font-bold text-[#187332] mb-3">{treeStage.name} 단계</div>
@@ -1011,14 +1046,19 @@
       const [currentStage, setCurrentStage] = useState(1);
       
       const [bgmEnabled, setBgmEnabled] = useState(true); 
-      const audioRef = useRef(null);
+      const introAudioRef = useRef(null);
+      const playAudioRef = useRef(null);
 
       useEffect(() => {
-        audioRef.current = new Audio("https://github.com/KOKIM12/k-voca-solitaire/raw/refs/heads/main/The_Lucky_Clover_Leap.mp3");
-        audioRef.current.loop = true;
-        audioRef.current.volume = 0.4;
+        introAudioRef.current = new Audio("https://github.com/KOKIM12/k-voca-solitaire/raw/refs/heads/main/intro.mp3");
+        introAudioRef.current.loop = true;
+        introAudioRef.current.volume = 0.4;
+
+        playAudioRef.current = new Audio("https://github.com/KOKIM12/k-voca-solitaire/raw/refs/heads/main/play.mp3");
+        playAudioRef.current.loop = true;
+        playAudioRef.current.volume = 0.2;
         
-        const playPromise = audioRef.current.play();
+        const playPromise = introAudioRef.current.play();
         if (playPromise !== undefined) {
           playPromise.catch(error => {
             console.log("자동 재생이 차단되었습니다.", error);
@@ -1027,19 +1067,32 @@
         }
 
         return () => {
-          if (audioRef.current) audioRef.current.pause();
+          if (introAudioRef.current) introAudioRef.current.pause();
+          if (playAudioRef.current) playAudioRef.current.pause();
         };
       }, []);
 
       useEffect(() => {
-        if (!audioRef.current) return;
+        if (!introAudioRef.current || !playAudioRef.current) return;
         
-        if (currentScreen === 'title' && bgmEnabled) {
-          audioRef.current.play().catch(e => {
-            setBgmEnabled(false);
-          });
-        } else {
-          audioRef.current.pause();
+        if (!bgmEnabled) {
+          introAudioRef.current.pause();
+          playAudioRef.current.pause();
+          return;
+        }
+
+        if (currentScreen === 'title' || currentScreen === 'tree') {
+          playAudioRef.current.pause();
+          // 도감 <-> 타이틀 간 이동 시 노래가 끊기지 않도록 일시정지 상태일 때만 play 시도
+          if (introAudioRef.current.paused) {
+            introAudioRef.current.play().catch(e => setBgmEnabled(false));
+          }
+        } else if (currentScreen === 'game') {
+          introAudioRef.current.pause();
+          if (playAudioRef.current.paused) {
+            playAudioRef.current.currentTime = 0;
+            playAudioRef.current.play().catch(e => setBgmEnabled(false));
+          }
         }
       }, [bgmEnabled, currentScreen]);
 
@@ -1090,6 +1143,8 @@
                 }} 
                 onBack={() => { playSound('click'); setCurrentScreen('title'); }}
                 unlockWord={unlockWord}
+                bgmEnabled={bgmEnabled}
+                toggleBgm={toggleBgm}
               />
             )}
             {currentScreen === 'tree' && (
