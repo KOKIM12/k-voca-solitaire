@@ -49,6 +49,8 @@
       overflow: hidden; 
       background: linear-gradient(to bottom, #8AC74C, #60A673, #187332);
       touch-action: none; 
+      height: 100dvh;
+      width: 100vw;
     }
     
     .font-title { font-family: 'KkuBulLim', sans-serif; }
@@ -90,6 +92,17 @@
     @keyframes shine {
       0% { transform: translateX(-200%) skewX(-20deg); }
       100% { transform: translateX(300%) skewX(-20deg); }
+    }
+    
+    @keyframes pop-twinkle {
+      0% { opacity: 0; transform: scale(0.3) translateY(20px); }
+      20% { opacity: 1; transform: scale(1.1) translateY(0px); }
+      40% { transform: scale(0.9) translateY(-5px); }
+      80% { opacity: 1; transform: scale(1) translateY(-15px); }
+      100% { opacity: 0; transform: scale(0.3) translateY(-25px); }
+    }
+    .animate-pop-twinkle {
+      animation: pop-twinkle 3s infinite ease-in-out;
     }
     
     @keyframes ring-pulse {
@@ -136,6 +149,8 @@
     const CheckCircle2 = (props) => <IconSVG {...props}><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></IconSVG>;
     const Volume2 = (props) => <IconSVG {...props}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></IconSVG>;
     const VolumeX = (props) => <IconSVG {...props}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></IconSVG>;
+    const Star = (props) => <IconSVG {...props}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></IconSVG>;
+    const Sparkle = (props) => <IconSVG {...props}><path d="M12 22c0-5.523-4.477-10-10-10 5.523 0 10-4.477 10-10 0 5.523 4.477 10 10 10-5.523 0-10 4.477-10 10z"></path></IconSVG>;
 
     // --- Web Audio API 매니저 ---
     let audioCtx = null;
@@ -383,16 +398,27 @@
             {bgmEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />}
           </button>
 
+          {/* 뿅뿅 튀는 별 파티클 (배경 - 버튼 영역과 겹치지 않게 상단 65%로 제한) */}
+          <div className="absolute top-0 left-0 w-full h-[65%] pointer-events-none overflow-hidden z-0">
+            <div className="absolute top-[12%] left-[10%] text-white animate-pop-twinkle" style={{ animationDelay: '0s', animationDuration: '3.5s' }}><Star size={24} fill="currentColor"/></div>
+            <div className="absolute top-[25%] right-[15%] text-yellow-300 animate-pop-twinkle" style={{ animationDelay: '1.2s', animationDuration: '4s' }}><Sparkle size={32} fill="currentColor"/></div>
+            <div className="absolute top-[45%] left-[18%] text-yellow-200 animate-pop-twinkle" style={{ animationDelay: '2.5s', animationDuration: '3.8s' }}><Star size={18} fill="currentColor"/></div>
+            <div className="absolute top-[55%] right-[12%] text-white animate-pop-twinkle" style={{ animationDelay: '0.8s', animationDuration: '4.2s' }}><Sparkle size={24} fill="currentColor"/></div>
+            <div className="absolute bottom-[20%] left-[15%] text-white animate-pop-twinkle" style={{ animationDelay: '1.5s', animationDuration: '3.6s' }}><Sparkle size={28} fill="currentColor"/></div>
+            <div className="absolute bottom-[10%] right-[16%] text-yellow-300 animate-pop-twinkle" style={{ animationDelay: '0.3s', animationDuration: '4.5s' }}><Star size={24} fill="currentColor"/></div>
+            <div className="absolute bottom-[13%] right-[40%] text-yellow-100 animate-pop-twinkle" style={{ animationDelay: '2s', animationDuration: '4s' }}><Star size={16} fill="currentColor"/></div>
+          </div>
+
           <div className="w-full flex flex-col items-center -mt-8 shrink-0 relative z-0">
             <img 
               src="https://raw.githubusercontent.com/KOKIM12/k-voca-solitaire/refs/heads/main/tree.png" 
               alt="개념 나무" 
-              className="w-[22rem] h-[22rem] drop-shadow-sx object-contain -mb-8" 
+              className="w-[22rem] h-[22rem] drop-shadow-xs object-contain -mb-8" 
             />
           </div>
           
-          <div className="w-full shrink-0 relative z-10 mb-4">
-            <h1 className="text-6xl text-yellow-300 drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)] font-title leading-tight tracking-wide mb-1">
+          <div className="w-full shrink-0 relative z-10 mt-4 mb-3">
+            <h1 className="text-6xl text-yellow-300 drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)] font-title leading-tight tracking-wide mb-0">
               <span className="animate-bounce-char" style={{ animationDelay: '0s' }}>단</span>
               <span className="animate-bounce-char" style={{ animationDelay: '0.15s' }}>어</span>
               <span className="animate-bounce-char" style={{ animationDelay: '0.3s' }}> </span>
@@ -400,15 +426,15 @@
               <span className="animate-bounce-char" style={{ animationDelay: '0.6s' }}>쏙</span>
               <span className="animate-bounce-char" style={{ animationDelay: '0.75s' }}>!</span>
             </h1>
-            <h2 className="text-3xl text-white/95 drop-shadow-md font-title tracking-widest mb-3 -mt-2">
+            <h2 className="text-3xl text-white/95 drop-shadow-md font-title tracking-widest mb-3 -mt-3">
               개념 나무 키우기
             </h2>
-            <div className="text-white/90 text-xs font-medium bg-black/20 px-4 py-1.5 rounded-full border border-white/10 inline-block tracking-wider" style={{ fontWeight: 400 }}>
+            <div className="text-white/90 text-xs font-thin bg-black/20 px-4 py-1.5 rounded-full border border-white/10 inline-block tracking-wider mt-4" style={{ fontWeight: 100 }}>
               🌱 개념 도감을 모아 나무를 키워 보세요!
             </div>
           </div>
           
-          <div className="space-y-4 w-full mt-auto mb-2">
+          <div className="space-y-4 w-full mt-auto mb-10 relative z-10">
             <button 
               onClick={onStart}
               className="w-full py-4 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-2xl text-xl font-bold shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
@@ -747,7 +773,7 @@
                     `}
                   >
                     <div className="absolute top-1 w-full text-center z-40">
-                      <span className="text-[11px] font-bold bg-black/60 text-white/95 px-2 py-0.5 rounded backdrop-blur-sm shadow-sm">{cat}</span>
+                      <span className="text-[14px] font-bold bg-black/60 text-white/95 px-3 py-0.5 rounded backdrop-blur-sm shadow-sm">{cat}</span>
                     </div>
                     
                     {stackedCards.map((card, idx) => {
@@ -836,7 +862,7 @@
                         }}
                       >
                         <div className="text-4xl drop-shadow-sm pointer-events-none">{word.icon}</div>
-                        <div className="font-bold text-sm text-slate-800 mt-2 pointer-events-none tracking-tight">{word.word}</div>
+                        <div className="font-bold text-base text-slate-800 mt-2 pointer-events-none tracking-tight">{word.word}</div>
                       </div>
                     );
                   })}
@@ -1114,7 +1140,7 @@
       }, []);
 
       return (
-        <div className="fixed inset-0 bg-gradient-to-b from-[#8AC74C] via-[#60A673] to-[#187332] text-slate-800 flex justify-center w-full selection:bg-yellow-300 overflow-hidden">
+        <div className="fixed top-0 left-0 w-full h-[100dvh] bg-gradient-to-b from-[#8AC74C] via-[#60A673] to-[#187332] text-slate-800 flex justify-center selection:bg-yellow-300 overflow-hidden">
           <div className="w-full max-w-md h-full flex flex-col relative overflow-hidden mx-auto bg-transparent">
             {currentScreen === 'title' && (
               <TitleScreen 
