@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>단어 쏙쏙! 개념 나무 키우기</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & ReactDOM CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Babel CDN (브라우저에서 JSX 변환) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- 통합 스타일링 -->
+  <style>
+    @font-face {
+        font-family: 'KkuBulLim';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2410-1@1.0/BMkkubulimTTF-Regular.woff2') format('woff2');
+        font-weight: normal;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'LineSeed';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_11-01@1.0/LINESeedKR-Th.woff2') format('woff2');
+        font-weight: 100;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'LineSeed';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_11-01@1.0/LINESeedKR-Rg.woff2') format('woff2');
+        font-weight: 400;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'LineSeed';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_11-01@1.0/LINESeedKR-Bd.woff2') format('woff2');
+        font-weight: 700;
+        font-display: swap;
+    }
+    
+    body, html { 
+      margin: 0; 
+      padding: 0;
+      font-family: 'LineSeed', sans-serif; 
+      overflow: hidden; 
+      background-color: #146B3A;
+      touch-action: none; /* 모바일 새로고침 방지 */
+    }
+    
+    .font-title { font-family: 'KkuBulLim', sans-serif; }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px) rotate(-3deg); }
+      75% { transform: translateX(8px) rotate(3deg); }
+    }
+    .animate-shake { animation: shake 0.4s ease-in-out; }
+    
+    @keyframes float-up {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-50px) scale(0.8); opacity: 0; }
+    }
+    .animate-float-up { animation: float-up 0.5s ease-in forwards; }
+    
+    @keyframes deal {
+      0% { transform: translateY(-100px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    .animate-deal { animation: deal 0.4s ease-out forwards; }
+
+    @keyframes fade {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .animate-fade { animation: fade 0.2s ease-out forwards; }
+
+    @keyframes shine {
+      0% { transform: translateX(-200%) skewX(-20deg); }
+      100% { transform: translateX(300%) skewX(-20deg); }
+    }
+    
+    /* 사용자 스크롤바 숨기기 설정 */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent; 
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(20, 107, 58, 0.3); 
+        border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React 비즈니스 로직 -->
+  <script type="text/babel">
+    const { useState, useEffect, useCallback, useMemo } = React;
+
+    // --- Lucide 아이콘 대체용 인라인 SVG 컴포넌트 ---
+    const IconSVG = ({ children, size = 24, className = "", fill = "none" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        {children}
+      </svg>
+    );
+
+    const Play = (props) => <IconSVG {...props}><polygon points="5 3 19 12 5 21 5 3"></polygon></IconSVG>;
+    const Book = (props) => <IconSVG {...props}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></IconSVG>;
+    const Trophy = (props) => <IconSVG {...props}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2Z"/></IconSVG>;
+    const RefreshCw = (props) => <IconSVG {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></IconSVG>;
+    const Zap = (props) => <IconSVG {...props}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></IconSVG>;
+    const Clock = (props) => <IconSVG {...props}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></IconSVG>;
+    const Home = (props) => <IconSVG {...props}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></IconSVG>;
+    const HelpCircle = (props) => <IconSVG {...props}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></IconSVG>;
+    const CheckCircle2 = (props) => <IconSVG {...props}><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></IconSVG>;
+
+    // --- 오디오 효과음 유틸리티 (Web Audio API) ---
+    let audioCtx = null;
+    const playSound = (type) => {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        const now = audioCtx.currentTime;
+        
+        if (type === 'click') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(600, now);
+          osc.frequency.exponentialRampToValueAtTime(1000, now + 0.05);
+          gainNode.gain.setValueAtTime(0.05, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+          osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'grab') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(400, now);
+          osc.frequency.linearRampToValueAtTime(500, now + 0.05);
+          gainNode.gain.setValueAtTime(0.05, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+          osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'success') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(500, now);
+          osc.frequency.setValueAtTime(700, now + 0.1);
+          osc.frequency.setValueAtTime(1000, now + 0.2);
+          gainNode.gain.setValueAtTime(0.08, now);
+          gainNode.gain.linearRampToValueAtTime(0.001, now + 0.3);
+          osc.start(now); osc.stop(now + 0.3);
+        } else if (type === 'error') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(150, now);
+          gainNode.gain.setValueAtTime(0.1, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+          osc.start(now); osc.stop(now + 0.2);
+        }
+      } catch (e) {
+        console.error("오디오 재생 실패", e);
+      }
+    };
+
+    // --- 총 120개 데이터 정의 (5단계) ---
+    const WORD_DB = [
+      { id: 'w1', word: '사과', cat: '과일', icon: '🍎', stage: 1, path: ['생물', '식물', '과일'] },
+      { id: 'w2', word: '바나나', cat: '과일', icon: '🍌', stage: 1, path: ['생물', '식물', '과일'] },
+      { id: 'w3', word: '포도', cat: '과일', icon: '🍇', stage: 1, path: ['생물', '식물', '과일'] },
+      { id: 'w4', word: '딸기', cat: '과일', icon: '🍓', stage: 1, path: ['생물', '식물', '과일'] },
+      { id: 'w5', word: '수박', cat: '과일', icon: '🍉', stage: 1, path: ['생물', '식물', '과일'] },
+      { id: 'w6', word: '강아지', cat: '동물', icon: '🐶', stage: 1, path: ['생물', '동물'] },
+      { id: 'w7', word: '고양이', cat: '동물', icon: '🐱', stage: 1, path: ['생물', '동물'] },
+      { id: 'w8', word: '사자', cat: '동물', icon: '🦁', stage: 1, path: ['생물', '동물'] },
+      { id: 'w9', word: '코끼리', cat: '동물', icon: '🐘', stage: 1, path: ['생물', '동물'] },
+      { id: 'w10', word: '기린', cat: '동물', icon: '🦒', stage: 1, path: ['생물', '동물'] },
+      { id: 'w11', word: '자동차', cat: '탈것', icon: '🚗', stage: 1, path: ['무생물', '탈것'] },
+      { id: 'w12', word: '비행기', cat: '탈것', icon: '✈️', stage: 1, path: ['무생물', '탈것'] },
+      { id: 'w13', word: '기차', cat: '탈것', icon: '🚂', stage: 1, path: ['무생물', '탈것'] },
+      { id: 'w14', word: '배', cat: '탈것', icon: '🚢', stage: 1, path: ['무생물', '탈것'] },
+      { id: 'w15', word: '자전거', cat: '탈것', icon: '🚲', stage: 1, path: ['무생물', '탈것'] },
+      { id: 'w16', word: '장미', cat: '식물', icon: '🌹', stage: 1, path: ['생물', '식물', '꽃'] },
+      { id: 'w17', word: '나무', cat: '식물', icon: '🌳', stage: 1, path: ['생물', '식물', '나무'] },
+      { id: 'w18', word: '새싹', cat: '식물', icon: '🌱', stage: 1, path: ['생물', '식물'] },
+      { id: 'w19', word: '해바라기', cat: '식물', icon: '🌻', stage: 1, path: ['생물', '식물', '꽃'] },
+      { id: 'w20', word: '튤립', cat: '식물', icon: '🌷', stage: 1, path: ['생물', '식물', '꽃'] },
+
+      { id: 'w21', word: '연필', cat: '학용품', icon: '✏️', stage: 2, path: ['무생물', '물건', '학용품'] },
+      { id: 'w22', word: '지우개', cat: '학용품', icon: '🧽', stage: 2, path: ['무생물', '물건', '학용품'] },
+      { id: 'w23', word: '공책', cat: '학용품', icon: '📓', stage: 2, path: ['무생물', '물건', '학용품'] },
+      { id: 'w24', word: '가위', cat: '학용품', icon: '✂️', stage: 2, path: ['무생물', '물건', '학용품'] },
+      { id: 'w25', word: '자', cat: '학용품', icon: '📏', stage: 2, path: ['무생물', '물건', '학용품'] },
+      { id: 'w26', word: '냉장고', cat: '가전제품', icon: '🧊', stage: 2, path: ['무생물', '기계', '가전제품'] },
+      { id: 'w27', word: 'TV', cat: '가전제품', icon: '📺', stage: 2, path: ['무생물', '기계', '가전제품'] },
+      { id: 'w28', word: '세탁기', cat: '가전제품', icon: '🧺', stage: 2, path: ['무생물', '기계', '가전제품'] },
+      { id: 'w29', word: '에어컨', cat: '가전제품', icon: '❄️', stage: 2, path: ['무생물', '기계', '가전제품'] },
+      { id: 'w30', word: '청소기', cat: '가전제품', icon: '🧹', stage: 2, path: ['무생물', '기계', '가전제품'] },
+      { id: 'w31', word: '경찰', cat: '직업', icon: '👮', stage: 2, path: ['사람', '직업'] },
+      { id: 'w32', word: '의사', cat: '직업', icon: '🧑‍⚕️', stage: 2, path: ['사람', '직업'] },
+      { id: 'w33', word: '소방관', cat: '직업', icon: '👨‍🚒', stage: 2, path: ['사람', '직업'] },
+      { id: 'w34', word: '선생님', cat: '직업', icon: '🧑‍🏫', stage: 2, path: ['사람', '직업'] },
+      { id: 'w35', word: '요리사', cat: '직업', icon: '🧑‍🍳', stage: 2, path: ['사람', '직업'] },
+      { id: 'w101', word: '할아버지', cat: '가족', icon: '👴', stage: 2, path: ['사람', '가족'] },
+      { id: 'w102', word: '할머니', cat: '가족', icon: '👵', stage: 2, path: ['사람', '가족'] },
+      { id: 'w103', word: '아버지', cat: '가족', icon: '👨', stage: 2, path: ['사람', '가족'] },
+      { id: 'w104', word: '어머니', cat: '가족', icon: '👩', stage: 2, path: ['사람', '가족'] },
+      { id: 'w105', word: '동생', cat: '가족', icon: '👶', stage: 2, path: ['사람', '가족'] },
+      { id: 'w36', word: '빵', cat: '음식', icon: '🍞', stage: 2, path: ['무생물', '음식'] },
+      { id: 'w37', word: '피자', cat: '음식', icon: '🍕', stage: 2, path: ['무생물', '음식'] },
+      { id: 'w38', word: '햄버거', cat: '음식', icon: '🍔', stage: 2, path: ['무생물', '음식'] },
+      { id: 'w39', word: '치킨', cat: '음식', icon: '🍗', stage: 2, path: ['무생물', '음식'] },
+      { id: 'w40', word: '아이스크림', cat: '음식', icon: '🍦', stage: 2, path: ['무생물', '음식'] },
+
+      { id: 'w41', word: '피아노', cat: '악기', icon: '🎹', stage: 3, path: ['무생물', '물건', '악기'] },
+      { id: 'w42', word: '기타', cat: '악기', icon: '🎸', stage: 3, path: ['무생물', '물건', '악기'] },
+      { id: 'w43', word: '바이올린', cat: '악기', icon: '🎻', stage: 3, path: ['무생물', '물건', '악기'] },
+      { id: 'w44', word: '드럼', cat: '악기', icon: '🥁', stage: 3, path: ['무생물', '물건', '악기'] },
+      { id: 'w45', word: '트럼펫', cat: '악기', icon: '🎺', stage: 3, path: ['무생물', '물건', '악기'] },
+      { id: 'w46', word: '축구', cat: '스포츠', icon: '⚽', stage: 3, path: ['활동', '스포츠'] },
+      { id: 'w47', word: '농구', cat: '스포츠', icon: '🏀', stage: 3, path: ['활동', '스포츠'] },
+      { id: 'w48', word: '야구', cat: '스포츠', icon: '⚾', stage: 3, path: ['활동', '스포츠'] },
+      { id: 'w49', word: '테니스', cat: '스포츠', icon: '🎾', stage: 3, path: ['활동', '스포츠'] },
+      { id: 'w50', word: '수영', cat: '스포츠', icon: '🏊', stage: 3, path: ['활동', '스포츠'] },
+      { id: 'w106', word: '윷놀이', cat: '전통놀이', icon: '🪵', stage: 3, path: ['활동', '전통놀이'] },
+      { id: 'w107', word: '제기차기', cat: '전통놀이', icon: '🏵️', stage: 3, path: ['활동', '전통놀이'] },
+      { id: 'w108', word: '연날리기', cat: '전통놀이', icon: '🪁', stage: 3, path: ['활동', '전통놀이'] },
+      { id: 'w109', word: '팽이치기', cat: '전통놀이', icon: '🌀', stage: 3, path: ['활동', '전통놀이'] },
+      { id: 'w110', word: '널뛰기', cat: '전통놀이', icon: '〰️', stage: 3, path: ['활동', '전통놀이'] },
+      { id: 'w51', word: '맑음', cat: '날씨', icon: '☀️', stage: 3, path: ['자연', '날씨'] },
+      { id: 'w52', word: '흐림', cat: '날씨', icon: '☁️', stage: 3, path: ['자연', '날씨'] },
+      { id: 'w53', word: '비', cat: '날씨', icon: '🌧️', stage: 3, path: ['자연', '날씨'] },
+      { id: 'w54', word: '눈', cat: '날씨', icon: '❄️', stage: 3, path: ['자연', '날씨'] },
+      { id: 'w55', word: '번개', cat: '날씨', icon: '⚡', stage: 3, path: ['자연', '날씨'] },
+      { id: 'w56', word: '태양', cat: '우주', icon: '🌞', stage: 3, path: ['자연', '우주'] },
+      { id: 'w57', word: '달', cat: '우주', icon: '🌙', stage: 3, path: ['자연', '우주'] },
+      { id: 'w58', word: '지구', cat: '우주', icon: '🌍', stage: 3, path: ['자연', '우주'] },
+      { id: 'w59', word: '별', cat: '우주', icon: '⭐', stage: 3, path: ['자연', '우주'] },
+      { id: 'w60', word: '화성', cat: '우주', icon: '🪐', stage: 3, path: ['자연', '우주'] },
+      { id: 'w116', word: '대한민국', cat: '나라', icon: '🇰🇷', stage: 3, path: ['개념', '나라'] },
+      { id: 'w117', word: '미국', cat: '나라', icon: '🇺🇸', stage: 3, path: ['개념', '나라'] },
+      { id: 'w118', word: '중국', cat: '나라', icon: '🇨🇳', stage: 3, path: ['개념', '나라'] },
+      { id: 'w119', word: '일본', cat: '나라', icon: '🇯🇵', stage: 3, path: ['개념', '나라'] },
+      { id: 'w120', word: '영국', cat: '나라', icon: '🇬🇧', stage: 3, path: ['개념', '나라'] },
+
+      { id: 'w61', word: '호랑이', cat: '포유류', icon: '🐯', stage: 4, path: ['생물', '동물', '포유류'] },
+      { id: 'w62', word: '곰', cat: '포유류', icon: '🐻', stage: 4, path: ['생물', '동물', '포유류'] },
+      { id: 'w63', word: '토끼', cat: '포유류', icon: '🐰', stage: 4, path: ['생물', '동물', '포유류'] },
+      { id: 'w64', word: '다람쥐', cat: '포유류', icon: '🐿️', stage: 4, path: ['생물', '동물', '포유류'] },
+      { id: 'w65', word: '여우', cat: '포유류', icon: '🦊', stage: 4, path: ['생물', '동물', '포유류'] },
+      { id: 'w66', word: '참새', cat: '조류', icon: '🐦', stage: 4, path: ['생물', '동물', '조류'] },
+      { id: 'w67', word: '독수리', cat: '조류', icon: '🦅', stage: 4, path: ['생물', '동물', '조류'] },
+      { id: 'w68', word: '펭귄', cat: '조류', icon: '🐧', stage: 4, path: ['생물', '동물', '조류'] },
+      { id: 'w69', word: '타조', cat: '조류', icon: '🦤', stage: 4, path: ['생물', '동물', '조류'] },
+      { id: 'w70', word: '올빼미', cat: '조류', icon: '🦉', stage: 4, path: ['생물', '동물', '조류'] },
+      { id: 'w71', word: '상어', cat: '어류', icon: '🦈', stage: 4, path: ['생물', '동물', '어류'] },
+      { id: 'w72', word: '고등어', cat: '어류', icon: '🐟', stage: 4, path: ['생물', '동물', '어류'] },
+      { id: 'w73', word: '연어', cat: '어류', icon: '🍣', stage: 4, path: ['생물', '동물', '어류'] },
+      { id: 'w74', word: '복어', cat: '어류', icon: '🐡', stage: 4, path: ['생물', '동물', '어류'] },
+      { id: 'w75', word: '열대어', cat: '어류', icon: '🐠', stage: 4, path: ['생물', '동물', '어류'] },
+      { id: 'w76', word: '나비', cat: '곤충', icon: '🦋', stage: 4, path: ['생물', '곤충'] },
+      { id: 'w77', word: '개미', cat: '곤충', icon: '🐜', stage: 4, path: ['생물', '곤충'] },
+      { id: 'w78', word: '무당벌레', cat: '곤충', icon: '🐞', stage: 4, path: ['생물', '곤충'] },
+      { id: 'w79', word: '꿀벌', cat: '곤충', icon: '🐝', stage: 4, path: ['생물', '곤충'] },
+      { id: 'w80', word: '모기', cat: '곤충', icon: '🦟', stage: 4, path: ['생물', '곤충'] },
+      { id: 'w111', word: '매미', cat: '곤충', icon: '🌳', stage: 4, path: ['생물', '곤충'] },
+      { id: 'w112', word: '잠자리', cat: '곤충', icon: '🚁', stage: 4, path: ['생물', '곤충'] },
+      { id: 'w113', word: '메뚜기', cat: '곤충', icon: '🦗', stage: 4, path: ['생물', '곤충'] },
+      { id: 'w114', word: '장수풍뎅이', cat: '곤충', icon: '🪲', stage: 4, path: ['생물', '곤충'] },
+      { id: 'w115', word: '사마귀', cat: '곤충', icon: '🌿', stage: 4, path: ['생물', '곤충'] },
+
+      { id: 'w81', word: '뱀', cat: '파충류', icon: '🐍', stage: 5, path: ['생물', '동물', '파충류'] },
+      { id: 'w82', word: '거북이', cat: '파충류', icon: '🐢', stage: 5, path: ['생물', '동물', '파충류'] },
+      { id: 'w83', word: '도마뱀', cat: '파충류', icon: '🦎', stage: 5, path: ['생물', '동물', '파충류'] },
+      { id: 'w84', word: '악어', cat: '파충류', icon: '🐊', stage: 5, path: ['생물', '동물', '파충류'] },
+      { id: 'w85', word: '공룡', cat: '파충류', icon: '🦖', stage: 5, path: ['생물', '동물', '파충류'] },
+      { id: 'w86', word: '빨강', cat: '색깔', icon: '🔴', stage: 5, path: ['개념', '색깔'] },
+      { id: 'w87', word: '파랑', cat: '색깔', icon: '🔵', stage: 5, path: ['개념', '색깔'] },
+      { id: 'w88', word: '노랑', cat: '색깔', icon: '🟡', stage: 5, path: ['개념', '색깔'] },
+      { id: 'w89', word: '초록', cat: '색깔', icon: '🟢', stage: 5, path: ['개념', '색깔'] },
+      { id: 'w90', word: '검정', cat: '색깔', icon: '⚫', stage: 5, path: ['개념', '색깔'] },
+      { id: 'w91', word: '기쁨', cat: '감정', icon: '😄', stage: 5, path: ['개념', '감정'] },
+      { id: 'w92', word: '슬픔', cat: '감정', icon: '😢', stage: 5, path: ['개념', '감정'] },
+      { id: 'w93', word: '화남', cat: '감정', icon: '😡', stage: 5, path: ['개념', '감정'] },
+      { id: 'w94', word: '놀람', cat: '감정', icon: '😲', stage: 5, path: ['개념', '감정'] },
+      { id: 'w95', word: '공포', cat: '감정', icon: '😱', stage: 5, path: ['개념', '감정'] },
+      { id: 'w96', word: '티셔츠', cat: '옷', icon: '👕', stage: 5, path: ['무생물', '물건', '옷'] },
+      { id: 'w97', word: '바지', cat: '옷', icon: '👖', stage: 5, path: ['무생물', '물건', '옷'] },
+      { id: 'w98', word: '원피스', cat: '옷', icon: '👗', stage: 5, path: ['무생물', '물건', '옷'] },
+      { id: 'w99', word: '양말', cat: '옷', icon: '🧦', stage: 5, path: ['무생물', '물건', '옷'] },
+      { id: 'w100', word: '모자', cat: '옷', icon: '🧢', stage: 5, path: ['무생물', '물건', '옷'] },
+    ];
+
+    const STAGE_INFO = {
+      1: { time: 80, targetScore: 1000 },
+      2: { time: 100, targetScore: 2000 }, 
+      3: { time: 120, targetScore: 3000 }, 
+      4: { time: 120, targetScore: 4000 }, 
+      5: { time: 120, targetScore: 5000 }, 
+    };
+
+    const shuffleArray = (array) => {
+      const newArr = [...array];
+      for (let i = newArr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+      }
+      return newArr;
+    };
+
+    // --- 구성 요소들 ---
+
+    function TitleScreen({ onStart, onTree, unlockedCount, totalCount }) {
+      const [showHelp, setShowHelp] = useState(false);
+
+      return (
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center relative h-full">
+          <div className="relative overflow-hidden w-32 h-32 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded-full flex items-center justify-center shadow-lg mb-4">
+            <span className="text-6xl drop-shadow-md z-10">🌳</span>
+            <div className="absolute inset-0 z-20 pointer-events-none animate-[shine_3s_infinite_ease-in-out] bg-gradient-to-r from-transparent via-white/80 to-transparent w-1/2 h-full"></div>
+          </div>
+          
+          <h1 className="text-6xl text-yellow-300 mb-1 drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)] font-title leading-tight tracking-wide">
+            단어 쏙쏙!
+          </h1>
+          <h2 className="text-3xl text-white/95 mb-10 drop-shadow-md font-title tracking-widest">
+            개념 나무 키우기
+          </h2>
+          
+          <div className="space-y-4 w-full">
+            <button 
+              onClick={onStart}
+              className="w-full py-4 bg-yellow-400 hover:bg-yellow-300 text-slate-900 rounded-2xl text-xl font-bold shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              <Play fill="currentColor" /> 게임 시작
+            </button>
+            
+            <div className="flex gap-3">
+              <button 
+                onClick={onTree}
+                className="flex-1 py-3 bg-white/20 hover:bg-white/30 text-white rounded-2xl font-bold shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 border border-white/20"
+              >
+                <Book size={18} /> 개념 도감 ({unlockedCount}/{totalCount})
+              </button>
+
+              <button 
+                onClick={() => { playSound('click'); setShowHelp(true); }}
+                className="flex-1 py-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-bold shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 border border-white/20"
+              >
+                <HelpCircle size={18} /> 게임 방법
+              </button>
+            </div>
+          </div>
+
+          {showHelp && (
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fade">
+              <div className="bg-white rounded-3xl p-6 w-full max-w-sm text-left shadow-2xl border-4 border-[#146B3A]">
+                <h3 className="text-3xl font-title text-[#146B3A] mb-4 text-center">게임 방법</h3>
+                <ul className="space-y-4 font-bold text-slate-700 text-[15px] bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                  <li className="flex gap-2"><span>👆</span> 맨 아래에 있는 카드를 드래그(또는 터치)하세요.</li>
+                  <li className="flex gap-2"><span>📦</span> 알맞은 상위 개념(빈칸) 위로 옮기세요.</li>
+                  <li className="flex gap-2"><span>🔥</span> 연속으로 맞히면 추가 점수를 얻습니다!</li>
+                  <li className="flex gap-2 text-red-500"><span>💡</span> 힌트를 사용해 맞힌 단어는 도감에 수집되지 않아요.</li>
+                  <li className="flex gap-2 text-[#146B3A]"><span>⏱️</span> 제한 시간 내에 모든 카드를 분류해 보세요.</li>
+                </ul>
+                <button 
+                  onClick={() => { playSound('click'); setShowHelp(false); }} 
+                  className="mt-6 w-full py-4 bg-[#146B3A] hover:bg-[#1a8a4b] text-white rounded-2xl font-bold text-lg shadow-md transition-transform active:scale-95"
+                >
+                  확인했어요!
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function ItemButton({ icon, count, onClick }) {
+      const disabled = count <= 0;
+      return (
+        <button 
+          onClick={onClick}
+          disabled={disabled}
+          className={`relative w-12 h-12 flex items-center justify-center rounded-xl font-bold transition-transform active:scale-90 shadow-md border-2 
+            ${disabled ? 'bg-black/30 border-white/5 text-white/30' : 'bg-white/20 border-white/40 text-white hover:bg-white/30 backdrop-blur-sm'}`}
+        >
+          {icon} 
+          <span className={`absolute -top-2 -right-2 text-[11px] w-5 h-5 flex items-center justify-center rounded-full font-black shadow-sm ${disabled ? 'bg-slate-500 text-slate-300' : 'bg-yellow-400 text-slate-900 border border-white'}`}>
+            {count}
+          </span>
+        </button>
+      );
+    }
+
+    function GameScreen({ stage, onGameEnd, onBack, unlockWord }) {
+      const [columns, setColumns] = useState([]); 
+      const [categories, setCategories] = useState([]); 
+      const [foundations, setFoundations] = useState({}); 
+      const [isInitialized, setIsInitialized] = useState(false);
+      
+      const [score, setScore] = useState(0);
+      const [combo, setCombo] = useState(1);
+      const [timeLeft, setTimeLeft] = useState(STAGE_INFO[stage].time);
+      const [gameState, setGameState] = useState('playing'); 
+
+      const [selectedInfo, setSelectedInfo] = useState(null); 
+      const [wrongId, setWrongId] = useState(null);
+      
+      const [items, setItems] = useState({ hint: 1, shuffle: 1, time: 1 });
+      const [hintActive, setHintActive] = useState(null);
+      const [hintedCards, setHintedCards] = useState(new Set()); 
+      const [floatTexts, setFloatTexts] = useState([]);
+
+      useEffect(() => {
+        setIsInitialized(false);
+        const stageWords = shuffleArray(WORD_DB.filter(w => w.stage === stage));
+        const stageCats = [...new Set(stageWords.map(w => w.cat))];
+        
+        setCategories(stageCats);
+        setHintedCards(new Set());
+        
+        const initFoundations = {};
+        stageCats.forEach(cat => initFoundations[cat] = []);
+        setFoundations(initFoundations);
+        
+        const numCols = 4;
+        const newCols = Array.from({ length: numCols }, () => []);
+        stageWords.forEach((word, idx) => {
+          newCols[idx % numCols].push(word);
+        });
+
+        setColumns(newCols);
+        setTimeLeft(STAGE_INFO[stage].time);
+        setScore(0);
+        setCombo(1);
+        setGameState('playing');
+        setSelectedInfo(null);
+        
+        setTimeout(() => setIsInitialized(true), 100);
+      }, [stage]);
+
+      useEffect(() => {
+        if (gameState !== 'playing' || !isInitialized) return;
+        const timer = setInterval(() => {
+          setTimeLeft(prev => {
+            if (prev <= 1) {
+              playSound('error');
+              setGameState('lost');
+              clearInterval(timer);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        return () => clearInterval(timer);
+      }, [gameState, isInitialized]);
+
+      const addFloatText = (text, colorClass) => {
+        const id = Date.now() + Math.random();
+        setFloatTexts(prev => [...prev, { id, text, colorClass }]);
+        setTimeout(() => {
+          setFloatTexts(prev => prev.filter(t => t.id !== id));
+        }, 800);
+      };
+
+      const handleMatch = (wordId, colIndex, targetCat) => {
+        if (gameState !== 'playing') return;
+        
+        const column = columns[colIndex];
+        if (!column || column.length === 0) return;
+        
+        const bottomCard = column[column.length - 1];
+        if (bottomCard.id !== wordId) return;
+
+        if (bottomCard.cat === targetCat) {
+          playSound('success');
+          
+          const isHinted = hintedCards.has(bottomCard.id);
+
+          if (isHinted) {
+            setCombo(1);
+            addFloatText(`통과! (도감 미수집)`, 'text-slate-300');
+          } else {
+            const earnedScore = 100 * combo;
+            setScore(s => s + earnedScore);
+            setCombo(c => c + 1);
+            unlockWord(bottomCard.id);
+            
+            addFloatText(`+${earnedScore}`, 'text-emerald-400');
+            if (combo > 1) addFloatText(`${combo} 연속 정답!`, 'text-yellow-400');
+
+            if (Math.random() < 0.15) {
+              const itemTypes = ['hint', 'shuffle', 'time'];
+              const dropType = itemTypes[Math.floor(Math.random() * itemTypes.length)];
+              setItems(prev => ({ ...prev, [dropType]: prev[dropType] + 1 }));
+              addFloatText(`도움말!`, 'text-sky-300');
+            }
+          }
+
+          setHintActive(null); 
+
+          setFoundations(prev => ({
+            ...prev,
+            [targetCat]: [...(prev[targetCat] || []), bottomCard]
+          }));
+          
+          setSelectedInfo(null);
+          setColumns(prev => {
+            const newCols = [...prev];
+            newCols[colIndex] = newCols[colIndex].slice(0, -1);
+            return newCols;
+          });
+
+        } else {
+          playSound('error');
+          setWrongId(bottomCard.id);
+          setCombo(1);
+          setSelectedInfo(null);
+          setTimeout(() => setWrongId(null), 400);
+        }
+      };
+
+      useEffect(() => {
+        if (!isInitialized) return;
+        const totalRemaining = columns.reduce((acc, col) => acc + col.length, 0);
+        if (totalRemaining === 0 && gameState === 'playing') {
+          playSound('success'); 
+          setGameState('won');
+        }
+      }, [columns, gameState, isInitialized]);
+
+      const useItem = (type) => {
+        if (items[type] <= 0 || gameState !== 'playing') return;
+        playSound('click');
+        setItems(prev => ({ ...prev, [type]: prev[type] - 1 }));
+        
+        if (type === 'hint') {
+          const activeCards = columns.map(col => col[col.length - 1]).filter(Boolean);
+          if (activeCards.length > 0) {
+            const hintCard = activeCards[Math.floor(Math.random() * activeCards.length)];
+            setHintActive({ cat: hintCard.cat, cardId: hintCard.id });
+            setHintedCards(prev => new Set(prev).add(hintCard.id));
+            setTimeout(() => setHintActive(null), 2500);
+          }
+        } else if (type === 'shuffle') {
+          const remaining = columns.flat();
+          const shuffled = shuffleArray(remaining);
+          const numCols = columns.length;
+          const newCols = Array.from({ length: numCols }, () => []);
+          shuffled.forEach((w, i) => newCols[i % numCols].push(w));
+          setColumns(newCols);
+          setSelectedInfo(null);
+        } else if (type === 'time') {
+          setTimeLeft(prev => prev + 10);
+          addFloatText('+10초', 'text-blue-300');
+        }
+      };
+
+      const handleDragStart = (e, wordId, colIndex) => {
+        playSound('grab');
+        e.dataTransfer.setData('application/json', JSON.stringify({ id: wordId, colIndex }));
+        setSelectedInfo({ id: wordId, colIndex });
+      };
+
+      const handleDrop = (e, targetCat) => {
+        e.preventDefault();
+        try {
+          const data = JSON.parse(e.dataTransfer.getData('application/json'));
+          if (data && data.id !== undefined && data.colIndex !== undefined) {
+            handleMatch(data.id, data.colIndex, targetCat);
+          }
+        } catch (err) {}
+      };
+
+      const handleCategoryClick = (cat) => {
+        if (selectedInfo) {
+          handleMatch(selectedInfo.id, selectedInfo.colIndex, cat);
+        } else {
+          playSound('click');
+        }
+      };
+
+      const totalRemaining = columns.reduce((acc, col) => acc + col.length, 0);
+
+      return (
+        <div className="flex-1 flex flex-col h-full w-full relative pt-14" onClick={() => setSelectedInfo(null)}>
+          <div className="fixed top-0 left-0 w-full z-20" onClick={(e) => e.stopPropagation()}>
+            <div className="absolute inset-0 bg-white/10 backdrop-blur-md shadow-sm border-b border-white/10"></div>
+            <div className="relative w-full max-w-md mx-auto px-4 py-2.5 flex items-center justify-between text-white">
+              <button onClick={onBack} className="p-2 text-white/80 hover:text-white bg-white/20 hover:bg-white/30 rounded-full transition-colors active:scale-90">
+                <Home size={20} />
+              </button>
+              
+              <div className="flex flex-col items-center">
+                <span className="text-[11px] font-bold text-yellow-300 opacity-90 tracking-wider mb-0.5">{stage} 단계</span>
+                <div className="flex items-center gap-1 drop-shadow-md">
+                  <Trophy size={16} className="text-yellow-400" />
+                  <span className="font-extrabold text-xl leading-none mt-0.5">{score}</span>
+                </div>
+              </div>
+              
+              <div className={`flex items-center gap-1 font-bold ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-white'}`}>
+                <Clock size={16} />
+                <span className="w-8 text-right drop-shadow-md text-lg leading-none mt-0.5">{timeLeft}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="h-8 flex items-center justify-center relative pointer-events-none z-30 mt-2 shrink-0">
+            {combo > 1 && (
+              <div className="bg-yellow-400 text-slate-800 px-4 py-0.5 rounded-full font-black text-sm shadow-lg flex items-center gap-1 border border-white/50 animate-fade">
+                <Zap size={14} fill="currentColor" /> {combo} 연속 정답!
+              </div>
+            )}
+            {floatTexts.map(ft => (
+              <div key={ft.id} className={`absolute font-black text-2xl drop-shadow-lg animate-float-up pointer-events-none ${ft.colorClass}`} style={{ left: '50%', transform: 'translateX(-50%)' }}>
+                {ft.text}
+              </div>
+            ))}
+          </div>
+
+          <div className="px-4 py-2 z-10 shrink-0" onClick={(e) => e.stopPropagation()}>
+            <div className="grid gap-3 grid-cols-4 max-w-sm mx-auto w-full">
+              {categories.map((cat) => {
+                const stackedCards = foundations[cat] || [];
+                return (
+                  <div
+                    key={cat}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => handleDrop(e, cat)}
+                    onClick={() => handleCategoryClick(cat)}
+                    className={`
+                      relative flex flex-col items-center justify-end h-28 rounded-xl border-2 transition-all shadow-inner overflow-visible
+                      ${hintActive?.cat === cat ? 'border-yellow-400 bg-yellow-400/30 animate-pulse ring-4 ring-yellow-400' : 'border-white/20 bg-black/10 hover:bg-white/10'}
+                      ${selectedInfo ? 'border-dashed border-white/60 cursor-pointer bg-white/5' : 'border-solid'}
+                    `}
+                  >
+                    <div className="absolute top-1 w-full text-center z-40">
+                      <span className="text-[11px] font-bold bg-black/60 text-white/95 px-2 py-0.5 rounded backdrop-blur-sm shadow-sm">{cat}</span>
+                    </div>
+                    
+                    {stackedCards.map((card, idx) => {
+                      const isTop = idx === stackedCards.length - 1;
+                      return (
+                        <div 
+                          key={card.id + idx} 
+                          className="absolute w-[80%] aspect-[2/2.5] bg-white rounded-xl border border-slate-300 shadow-[0_2px_4px_rgba(0,0,0,0.3)] flex flex-col items-center justify-center animate-deal"
+                          style={{
+                            transform: `translate(${idx * 2}px, ${idx * -3}px)`,
+                            bottom: '5%',
+                            zIndex: 10 + idx 
+                          }}
+                        >
+                          {isTop ? (
+                            <>
+                              <span className="text-2xl drop-shadow-sm mt-1">{card.icon}</span>
+                              <span className="text-[10px] font-bold text-slate-800 mt-0.5 tracking-tighter">{card.word}</span>
+                            </>
+                          ) : (
+                            <div className="w-full h-full bg-slate-100 rounded-xl opacity-90 border-t border-r border-slate-200"></div>
+                          )}
+                        </div>
+                      );
+                    })}
+                    
+                    {stackedCards.length === 0 && (
+                      <span className={`text-xs font-bold text-center break-keep mb-3 ${selectedInfo ? 'text-white/60' : 'text-white/30'}`}>
+                        여기에<br/>분류
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex-1 px-4 mt-2 relative z-0 w-full max-w-sm mx-auto">
+            <div className="flex justify-between w-full h-full">
+              {columns.map((col, colIndex) => (
+                <div key={`col-${colIndex}`} className="w-[23%] relative h-full">
+                  {col.length === 0 && (
+                    <div className="absolute top-0 w-full aspect-[2/2.5] rounded-xl border-2 border-white/10 bg-black/10"></div>
+                  )}
+                  {col.map((word, cardIndex) => {
+                    const isBottom = cardIndex === col.length - 1; 
+                    const isSelected = selectedInfo?.id === word.id;
+                    const isWrong = wrongId === word.id;
+                    const isHinted = hintActive?.cardId === word.id; 
+                    
+                    return (
+                      <div
+                        key={word.id}
+                        draggable={isBottom}
+                        onDragStart={(e) => isBottom && handleDragStart(e, word.id, colIndex)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (isBottom) {
+                            playSound('grab');
+                            setSelectedInfo({ id: word.id, colIndex });
+                          }
+                        }}
+                        className={`
+                          absolute w-full aspect-[2/2.5] rounded-xl shadow-[0_4px_8px_rgba(0,0,0,0.4)] 
+                          flex flex-col items-center justify-center bg-white select-none transition-all duration-200 animate-deal
+                          ${isBottom ? 'cursor-grab active:cursor-grabbing border-b-4 border-slate-300 hover:brightness-105' : 'brightness-90 border-b-2 border-slate-200'}
+                          ${isSelected ? 'ring-4 ring-yellow-400 -translate-y-3 !brightness-110 z-10' : ''}
+                          ${isWrong ? 'animate-shake bg-red-100 ring-4 ring-red-500 z-10' : ''}
+                          ${isHinted ? 'ring-4 ring-yellow-400 animate-pulse !brightness-110 z-10' : ''}
+                        `}
+                        style={{
+                          top: `calc(${cardIndex} * clamp(25px, 4vh, 45px))`, 
+                          zIndex: cardIndex,
+                          animationDelay: `${(colIndex * 2 + cardIndex) * 0.03}s` 
+                        }}
+                      >
+                        <div className="text-3xl drop-shadow-sm pointer-events-none">{word.icon}</div>
+                        <div className="font-bold text-[13px] text-slate-800 mt-1 pointer-events-none tracking-tight">{word.word}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="px-4 py-5 flex items-end justify-between z-10 shrink-0" onClick={(e) => e.stopPropagation()}>
+            <div className="text-white/90 font-bold text-sm bg-black/30 px-4 py-2 rounded-full backdrop-blur-sm shadow-inner border border-white/10">
+              남은 단어 : <span className="text-yellow-300 ml-1">{totalRemaining}</span>
+            </div>
+            <div className="flex gap-3">
+              <ItemButton icon={<Zap size={16}/>} count={items.hint} onClick={() => useItem('hint')} />
+              <ItemButton icon={<RefreshCw size={16}/>} count={items.shuffle} onClick={() => useItem('shuffle')} />
+              <ItemButton icon={<Clock size={16}/>} count={items.time} onClick={() => useItem('time')} />
+            </div>
+          </div>
+
+          {gameState !== 'playing' && (
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-6 z-50 animate-fade">
+              <div className="bg-white p-8 rounded-3xl w-full max-w-sm text-center shadow-2xl border-4 border-[#146B3A]">
+                {gameState === 'won' ? (
+                  <>
+                    <div className="text-6xl mb-4 animate-bounce">🎉</div>
+                    <h2 className="text-4xl font-title text-[#146B3A] mb-2">통과했어요!</h2>
+                    <p className="text-slate-600 mb-6 font-bold">최종 점수: <span className="text-2xl text-yellow-500">{score}</span></p>
+                    <div className="flex gap-3">
+                      <button onClick={onBack} className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold active:scale-95 transition-transform">처음으로</button>
+                      {stage < 5 ? (
+                        <button onClick={() => onGameEnd(true)} className="flex-1 py-3 bg-[#146B3A] text-white rounded-xl font-bold shadow-lg shadow-emerald-200 active:scale-95 transition-transform">다음 단계로</button>
+                      ) : (
+                        <button onClick={() => onGameEnd(true)} className="flex-1 py-3 bg-yellow-400 text-slate-800 rounded-xl font-bold shadow-lg shadow-yellow-200 active:scale-95 transition-transform">모두 마쳤어요!</button>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-6xl mb-4 animate-pulse">⏱️</div>
+                    <h2 className="text-4xl font-title text-red-500 mb-2">시간이 끝났어요</h2>
+                    <p className="text-slate-600 mb-6 font-bold">조금만 더 빨리 분류해 보아요!</p>
+                    <div className="flex gap-3">
+                      <button onClick={onBack} className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold active:scale-95 transition-transform">처음으로</button>
+                      <button onClick={() => {
+                        playSound('click');
+                        setGameState('playing');
+                        setIsInitialized(false);
+                        const stageWords = shuffleArray(WORD_DB.filter(w => w.stage === stage));
+                        
+                        const initFoundations = {};
+                        categories.forEach(cat => initFoundations[cat] = []);
+                        setFoundations(initFoundations);
+
+                        const numCols = 4;
+                        const newCols = Array.from({ length: numCols }, () => []);
+                        stageWords.forEach((word, idx) => newCols[idx % numCols].push(word));
+                        setColumns(newCols);
+                        setScore(0);
+                        setCombo(1);
+                        setTimeLeft(STAGE_INFO[stage].time);
+                        setHintedCards(new Set());
+                        setTimeout(() => setIsInitialized(true), 100);
+                      }} className="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold shadow-lg shadow-red-200 active:scale-95 transition-transform">다시 하기</button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function TreeScreen({ onBack, unlockedWords }) {
+      const treeData = useMemo(() => {
+        const root = { name: '모든 개념', total: 0, unlocked: 0, children: {} };
+        WORD_DB.forEach(item => {
+          let current = root;
+          current.total++;
+          if (unlockedWords.has(item.id)) current.unlocked++;
+
+          item.path.forEach((nodeName, index) => {
+            if (!current.children[nodeName]) {
+              current.children[nodeName] = { name: nodeName, total: 0, unlocked: 0, children: {}, words: [] };
+            }
+            current = current.children[nodeName];
+            current.total++;
+            if (unlockedWords.has(item.id)) current.unlocked++;
+            if (index === item.path.length - 1) current.words.push(item);
+          });
+        });
+        return root;
+      }, [unlockedWords]);
+
+      const progress = unlockedWords.size / WORD_DB.length;
+      let treeStage = { icon: '🌰', name: '작은 씨앗' };
+      if (progress === 1) treeStage = { icon: '🍎🌳', name: '완성된 도감' };
+      else if (progress >= 0.8) treeStage = { icon: '🍎🌳', name: '풍성한 나무' };
+      else if (progress >= 0.5) treeStage = { icon: '🌳', name: '무성한 나무' };
+      else if (progress >= 0.2) treeStage = { icon: '🌿', name: '자라나는 나무' };
+      else if (progress > 0) treeStage = { icon: '🌱', name: '새싹' };
+
+      return (
+        <div className="flex-1 flex flex-col bg-slate-50 h-full relative w-full pt-16">
+          <div className="fixed top-0 left-0 w-full bg-[#146B3A] z-20">
+            <div className="w-full max-w-md mx-auto px-6 py-4 flex items-center justify-between text-white shadow-md rounded-b-2xl md:rounded-none">
+              <button onClick={onBack} className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors active:scale-90">
+                <Home size={20} />
+              </button>
+              <h2 className="text-2xl font-title flex items-center gap-2 pt-1 text-yellow-300">
+                <Book size={20}/> 개념 나무 도감
+              </h2>
+              <div className="text-sm font-bold bg-black/20 px-3 py-1 rounded-full border border-white/20">
+                {unlockedWords.size} / {WORD_DB.length}
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 overflow-y-auto flex-1 custom-scrollbar w-full max-w-md mx-auto">
+            <div className="bg-white rounded-3xl shadow-sm p-6 border border-slate-100 flex flex-col items-center justify-center mb-6">
+              <div className="relative overflow-hidden w-28 h-28 bg-gradient-to-br from-emerald-50 to-green-100 rounded-full flex items-center justify-center shadow-inner mb-3">
+                <div className="text-7xl z-10">{treeStage.icon}</div>
+                <div className="absolute inset-0 z-20 pointer-events-none animate-[shine_3s_infinite_ease-in-out] bg-gradient-to-r from-transparent via-white/80 to-transparent w-1/2 h-full"></div>
+              </div>
+              <div className="text-xl font-bold text-[#146B3A] mb-3">{treeStage.name} 단계</div>
+              <div className="w-full max-w-xs h-4 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                <div 
+                  className="h-full bg-gradient-to-r from-emerald-400 to-green-500 transition-all duration-1000 ease-out"
+                  style={{ width: `${progress * 100}%` }}
+                ></div>
+              </div>
+              <div className="text-xs font-bold text-slate-400 mt-2">수집률 {Math.floor(progress * 100)}%</div>
+            </div>
+
+            <p className="text-center text-slate-500 mb-6 text-[13px] font-bold bg-white p-3 rounded-xl shadow-sm border border-slate-100">
+              게임을 플레이하며 새로운 단어와 개념을 모아보세요!<br/>
+              분류를 맞힐 때마다 나무가 자라납니다 🌱
+            </p>
+            <div className="bg-white rounded-3xl shadow-sm p-4 border border-slate-100">
+              <TreeNode node={treeData} unlockedIds={unlockedWords} depth={0} />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function TreeNode({ node, unlockedIds, depth }) {
+      const [isOpen, setIsOpen] = useState(depth < 2);
+      
+      if (depth === 0) {
+        return (
+          <div className="space-y-2">
+            {Object.values(node.children).map(child => (
+              <TreeNode key={child.name} node={child} unlockedIds={unlockedIds} depth={depth + 1} />
+            ))}
+          </div>
+        );
+      }
+
+      const hasChildren = Object.keys(node.children).length > 0 || node.words?.length > 0;
+      const isComplete = node.total > 0 && node.unlocked === node.total;
+      const isEmpty = node.unlocked === 0;
+
+      return (
+        <div className="text-left">
+          <div 
+            onClick={() => { playSound('click'); hasChildren && setIsOpen(!isOpen); }}
+            className={`
+              flex items-center justify-between py-2 px-3 rounded-xl mb-1 transition-colors
+              ${depth === 1 ? 'bg-slate-100 text-slate-800 font-bold mt-2' : 'text-slate-700 font-bold hover:bg-slate-50'}
+              ${hasChildren ? 'cursor-pointer active:scale-[0.98]' : ''}
+              ${isEmpty ? 'opacity-60 grayscale' : ''}
+            `}
+            style={{ marginLeft: depth > 1 ? `${(depth - 1) * 12}px` : '0px' }}
+          >
+            <div className="flex items-center gap-2">
+              {depth === 1 ? '📁' : depth === 2 ? '📂' : '📄'}
+              <span>{node.name}</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              {isComplete && <CheckCircle2 size={14} className="text-emerald-500" />}
+              <span className={`${isComplete ? 'text-emerald-600' : 'text-slate-400'} font-bold`}>
+                {node.unlocked}/{node.total}
+              </span>
+            </div>
+          </div>
+
+          {isOpen && (
+            <div className="mb-2">
+              {Object.values(node.children).map(child => (
+                <TreeNode key={child.name} node={child} unlockedIds={unlockedIds} depth={depth + 1} />
+              ))}
+              {node.words && node.words.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2 mb-3" style={{ marginLeft: `${depth * 12}px` }}>
+                  {node.words.map(w => {
+                    const isUnlocked = unlockedIds.has(w.id);
+                    return (
+                      <div key={w.id} className={`
+                        flex flex-col items-center p-2 rounded-lg border
+                        ${isUnlocked ? 'border-sky-200 bg-sky-50 shadow-sm' : 'border-slate-100 bg-slate-50 grayscale opacity-40'}
+                      `}>
+                        <span className="text-xl sm:text-2xl mb-1">{isUnlocked ? w.icon : '❓'}</span>
+                        <span className="font-bold text-[11px] sm:text-sm text-slate-600 tracking-tighter">
+                          {isUnlocked ? w.word : '???'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function App() {
+      const [currentScreen, setCurrentScreen] = useState('title');
+      const [unlockedWords, setUnlockedWords] = useState(() => {
+        const saved = localStorage.getItem('unlockedWords');
+        return saved ? new Set(JSON.parse(saved)) : new Set();
+      });
+      
+      const [currentStage, setCurrentStage] = useState(1);
+
+      useEffect(() => {
+        localStorage.setItem('unlockedWords', JSON.stringify([...unlockedWords]));
+      }, [unlockedWords]);
+
+      const unlockWord = useCallback((id) => {
+        setUnlockedWords(prev => {
+          const newSet = new Set(prev);
+          newSet.add(id);
+          return newSet;
+        });
+      }, []);
+
+      return (
+        <div className="fixed inset-0 bg-[#146B3A] text-slate-800 flex justify-center w-full selection:bg-yellow-300 overflow-hidden">
+          <div className="w-full max-w-md h-full flex flex-col relative overflow-hidden mx-auto">
+            {currentScreen === 'title' && (
+              <TitleScreen 
+                onStart={() => { playSound('click'); setCurrentStage(1); setCurrentScreen('game'); }} 
+                onTree={() => { playSound('click'); setCurrentScreen('tree'); }}
+                unlockedCount={unlockedWords.size}
+                totalCount={WORD_DB.length}
+              />
+            )}
+            {currentScreen === 'game' && (
+              <GameScreen 
+                stage={currentStage} 
+                onGameEnd={(win) => {
+                  playSound('click');
+                  if (win && currentStage < 5) {
+                    setCurrentStage(prev => prev + 1);
+                  } else {
+                    setCurrentScreen('title');
+                  }
+                }} 
+                onBack={() => { playSound('click'); setCurrentScreen('title'); }}
+                unlockWord={unlockWord}
+              />
+            )}
+            {currentScreen === 'tree' && (
+              <TreeScreen 
+                onBack={() => { playSound('click'); setCurrentScreen('title'); }} 
+                unlockedWords={unlockedWords} 
+              />
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // --- React 렌더링 ---
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
