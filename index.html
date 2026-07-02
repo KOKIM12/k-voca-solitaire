@@ -72,10 +72,10 @@
     .animate-shake { animation: shake 0.4s ease-in-out; }
     
     @keyframes float-up {
-      0% { transform: translateY(0) scale(1); opacity: 1; }
-      100% { transform: translateY(-50px) scale(0.8); opacity: 0; }
+      0% { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateX(-50%) translateY(-40px) scale(0.9); opacity: 0; }
     }
-    .animate-float-up { animation: float-up 0.5s ease-in forwards; }
+    .animate-float-up { animation: float-up 0.8s ease-in forwards; }
     
     @keyframes deal {
       0% { transform: translateY(-100px); opacity: 0; }
@@ -113,6 +113,15 @@
       animation: ring-pulse 1s ease-in-out infinite;
       z-index: 50;
     }
+
+    @keyframes ring-pulse-card {
+      0%, 100% { box-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 0 4px rgba(250, 204, 21, 1); }
+      50% { box-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 0 4px rgba(250, 204, 21, 0.3); }
+    }
+    .animate-ring-pulse-card {
+      animation: ring-pulse-card 1s ease-in-out infinite;
+      z-index: 50;
+    }
     
     .custom-scrollbar::-webkit-scrollbar {
         width: 6px;
@@ -139,6 +148,7 @@
       </svg>
     ));
 
+    const Play = (props) => <IconSVG {...props}><polygon points="5 3 19 12 5 21 5 3"></polygon></IconSVG>;
     const Book = (props) => <IconSVG {...props}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></IconSVG>;
     const Trophy = (props) => <IconSVG {...props}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7c0 3.31 2.69 6 6 6s6-2.69 6-6V2Z"/></IconSVG>;
     const RefreshCw = (props) => <IconSVG {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></IconSVG>;
@@ -363,7 +373,7 @@
       return newArr;
     };
 
-    const useTouchDrag = (onDropCallback) => {
+    const useTouchDrag = (onDrop) => {
       const activeElement = useRef(null);
 
       const handleTouchMove = useCallback((e) => {
@@ -371,15 +381,20 @@
       }, []);
 
       const handleTouchEnd = useCallback((e) => {
+        if (!activeElement.current) return;
         const touch = e.changedTouches[0];
-        const target = document.elementFromPoint(touch.clientX, touch.clientY);
-        const categoryTarget = target?.closest('[data-category]');
         
-        if (categoryTarget && activeElement.current) {
-          onDropCallback(activeElement.current.id, categoryTarget.dataset.category);
-        }
+        const node = activeElement.current.node;
+        const origPointerEvents = node.style.pointerEvents;
+        node.style.pointerEvents = 'none';
+
+        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+        
+        node.style.pointerEvents = origPointerEvents;
+
+        onDrop(activeElement.current, target);
         activeElement.current = null;
-      }, [onDropCallback]);
+      }, [onDrop]);
 
       return { activeElement, handleTouchMove, handleTouchEnd };
     };
@@ -398,27 +413,26 @@
             {bgmEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />}
           </button>
 
-          {/* 뿅뿅 튀는 별 파티클 (배경 - 버튼 영역과 겹치지 않게 상단 65%로 제한) */}
           <div className="absolute top-0 left-0 w-full h-[65%] pointer-events-none overflow-hidden z-0">
             <div className="absolute top-[12%] left-[10%] text-white animate-pop-twinkle" style={{ animationDelay: '0s', animationDuration: '3.5s' }}><Star size={24} fill="currentColor"/></div>
             <div className="absolute top-[25%] right-[15%] text-yellow-300 animate-pop-twinkle" style={{ animationDelay: '1.2s', animationDuration: '4s' }}><Sparkle size={32} fill="currentColor"/></div>
             <div className="absolute top-[45%] left-[18%] text-yellow-200 animate-pop-twinkle" style={{ animationDelay: '2.5s', animationDuration: '3.8s' }}><Star size={18} fill="currentColor"/></div>
             <div className="absolute top-[55%] right-[12%] text-white animate-pop-twinkle" style={{ animationDelay: '0.8s', animationDuration: '4.2s' }}><Sparkle size={24} fill="currentColor"/></div>
             <div className="absolute bottom-[20%] left-[15%] text-white animate-pop-twinkle" style={{ animationDelay: '1.5s', animationDuration: '3.6s' }}><Sparkle size={28} fill="currentColor"/></div>
-            <div className="absolute bottom-[10%] right-[16%] text-yellow-300 animate-pop-twinkle" style={{ animationDelay: '0.3s', animationDuration: '4.5s' }}><Star size={24} fill="currentColor"/></div>
-            <div className="absolute bottom-[13%] right-[40%] text-yellow-100 animate-pop-twinkle" style={{ animationDelay: '2s', animationDuration: '4s' }}><Star size={16} fill="currentColor"/></div>
+            <div className="absolute bottom-[5%] right-[22%] text-yellow-300 animate-pop-twinkle" style={{ animationDelay: '0.3s', animationDuration: '4.5s' }}><Star size={24} fill="currentColor"/></div>
+            <div className="absolute bottom-[10%] left-[45%] text-yellow-100 animate-pop-twinkle" style={{ animationDelay: '2s', animationDuration: '4s' }}><Star size={16} fill="currentColor"/></div>
           </div>
 
           <div className="w-full flex flex-col items-center -mt-8 shrink-0 relative z-0">
             <img 
               src="https://raw.githubusercontent.com/KOKIM12/k-voca-solitaire/refs/heads/main/tree.png" 
               alt="개념 나무" 
-              className="w-[22rem] h-[22rem] drop-shadow-xs object-contain -mb-8" 
+              className="w-[22rem] h-[22rem] drop-shadow-sm object-contain -mb-8" 
             />
           </div>
           
           <div className="w-full shrink-0 relative z-10 mt-4 mb-3">
-            <h1 className="text-6xl text-yellow-300 drop-shadow-[0_4px_4px_rgba(0,0,0,0.3)] font-title leading-tight tracking-wide mb-0">
+            <h1 className="text-6xl text-yellow-300 drop-shadow-sm font-title leading-tight tracking-wide mb-0">
               <span className="animate-bounce-char" style={{ animationDelay: '0s' }}>단</span>
               <span className="animate-bounce-char" style={{ animationDelay: '0.15s' }}>어</span>
               <span className="animate-bounce-char" style={{ animationDelay: '0.3s' }}> </span>
@@ -426,10 +440,10 @@
               <span className="animate-bounce-char" style={{ animationDelay: '0.6s' }}>쏙</span>
               <span className="animate-bounce-char" style={{ animationDelay: '0.75s' }}>!</span>
             </h1>
-            <h2 className="text-3xl text-white/95 drop-shadow-md font-title tracking-widest mb-3 -mt-3">
+            <h2 className="text-3xl text-white/95 drop-shadow-sm font-title tracking-widest mb-3 -mt-3">
               개념 나무 키우기
             </h2>
-            <div className="text-white/90 text-xs font-thin bg-black/20 px-4 py-1.5 rounded-full border border-white/10 inline-block tracking-wider mt-4" style={{ fontWeight: 100 }}>
+            <div className="text-white/90 text-xs bg-black/20 px-4 py-1.5 rounded-full border border-white/10 inline-block tracking-wider mt-4" style={{ fontWeight: 400 }}>
               🌱 개념 도감을 모아 나무를 키워 보세요!
             </div>
           </div>
@@ -463,10 +477,10 @@
             <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fade">
               <div className="bg-white rounded-3xl p-6 w-full max-w-sm text-left shadow-2xl border-4 border-[#60A673]">
                 <h3 className="text-3xl font-title text-[#187332] mb-4 text-center">게임 방법</h3>
-                <ul className="space-y-4 font-bold text-slate-700 text-base bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                <ul className="space-y-4 font-bold text-slate-700 text-base bg-emerald-50 p-4 rounded-xl border border-emerald-100 break-keep">
                   <li className="flex gap-2"><span>👆</span> 맨 아래 카드를 드래그(또는 터치)하세요.</li>
                   <li className="flex gap-2"><span>📦</span> 알맞은 상위 개념(빈칸) 위로 옮기세요.</li>
-                  <li className="flex gap-2"><span>🔥</span> 연속으로 맞히면 추가 점수를 얻습니다!</li>
+                  <li className="flex gap-2"><span>🔥</span> 같은 개념의 카드 위에 카드를 쌓을 수 있어요. 쌓인 카드는 한 번에 옮길 수 있어요.</li>
                   <li className="flex gap-2 text-red-500"><span>💡</span> 힌트를 사용해 맞힌 단어는 도감에 수집되지 않아요.</li>
                   <li className="flex gap-2 text-[#187332]"><span>⏱️</span> 제한 시간 내에 모든 카드를 분류해 보세요.</li>
                 </ul>
@@ -512,7 +526,7 @@
       const [gameState, setGameState] = useState('playing'); 
 
       const [selectedInfo, setSelectedInfo] = useState(null); 
-      const [wrongId, setWrongId] = useState(null);
+      const [wrongStack, setWrongStack] = useState(null);
       
       const [items, setItems] = useState({ hint: 1, shuffle: 1, time: 1 });
       const [hintActive, setHintActive] = useState(null);
@@ -524,13 +538,11 @@
         let stageWords = shuffleArray(WORD_DB.filter(w => w.stage === stage));
         let stageCats = shuffleArray([...new Set(stageWords.map(w => w.cat))]);
         
-        // 1단계: 3개 카테고리(15장), 2단계: 4개 카테고리(20장), 3단계 이상: 5개 카테고리
         let catLimit = 5;
         if (stage === 1) catLimit = 3;
         else if (stage === 2) catLimit = 4;
         
         stageCats = stageCats.slice(0, catLimit);
-        // 선택된 카테고리에 해당하는 카드만 필터링
         stageWords = stageWords.filter(w => stageCats.includes(w.cat));
         
         setCategories(stageCats);
@@ -552,6 +564,7 @@
         setCombo(0);
         setGameState('playing');
         setSelectedInfo(null);
+        setWrongStack(null);
         
         setTimeout(() => setIsInitialized(true), 100);
       }, [stage]);
@@ -587,32 +600,75 @@
         }, 800);
       }, []);
 
-      const handleMatch = useCallback((wordId, colIndex, targetCat) => {
+      const handleMoveToColumn = useCallback((sourceColIndex, sourceCardIndex, targetColIndex) => {
         if (gameState !== 'playing') return;
-        
-        const column = columns[colIndex];
-        if (!column || column.length === 0) return;
-        
-        const bottomCard = column[column.length - 1];
-        if (bottomCard.id !== wordId) return;
+        if (sourceColIndex === targetColIndex) {
+           setSelectedInfo(null);
+           return;
+        }
 
-        if (bottomCard.cat === targetCat) {
+        const sourceCol = columns[sourceColIndex];
+        const targetCol = columns[targetColIndex];
+        if (!sourceCol || sourceCol.length === 0) return;
+
+        const draggedCards = sourceCol.slice(sourceCardIndex);
+        const firstCard = draggedCards[0];
+
+        let isValid = false;
+        if (targetCol.length === 0) {
+           isValid = true;
+        } else {
+           const targetBottomCard = targetCol[targetCol.length - 1];
+           if (targetBottomCard.cat === firstCard.cat) {
+              isValid = true;
+           }
+        }
+
+        if (isValid) {
+           playSound('grab');
+           setColumns(prev => {
+              const newCols = [...prev];
+              newCols[sourceColIndex] = newCols[sourceColIndex].slice(0, sourceCardIndex);
+              newCols[targetColIndex] = [...newCols[targetColIndex], ...draggedCards];
+              return newCols;
+           });
+           setSelectedInfo(null);
+        } else {
+           playSound('error');
+           setWrongStack({ colIndex: sourceColIndex, cardIndex: sourceCardIndex });
+           setSelectedInfo(null);
+           setTimeout(() => setWrongStack(null), 400);
+        }
+      }, [columns, gameState]);
+
+      const handleMatch = useCallback((colIndex, cardIndex, targetCat) => {
+        if (gameState !== 'playing') return;
+        const sourceCol = columns[colIndex];
+        if (!sourceCol || sourceCol.length === 0) return;
+
+        const draggedCards = sourceCol.slice(cardIndex);
+        const firstCard = draggedCards[0];
+
+        if (firstCard.cat === targetCat) {
           playSound('success');
-          
-          const isHinted = hintedCards.has(bottomCard.id);
+          const isHinted = draggedCards.some(card => hintedCards.has(card.id));
+
+          let currentCombo = combo;
+          let earnedScore = 0;
 
           if (isHinted) {
-            setCombo(0); 
+            setCombo(0);
             addFloatText(`통과! (도감 미수집)`, 'text-slate-300');
           } else {
-            const newCombo = combo + 1; 
-            const earnedScore = 100 * newCombo;
+            draggedCards.forEach(card => {
+               currentCombo += 1;
+               earnedScore += 100 * currentCombo;
+               unlockWord(card.id);
+            });
+            setCombo(currentCombo);
             setScore(s => s + earnedScore);
-            setCombo(newCombo);
-            unlockWord(bottomCard.id);
-            
-            addFloatText(`+${earnedScore}`, 'text-emerald-300');
-            if (newCombo > 1) addFloatText(`${newCombo} 연속 정답!`, 'text-yellow-400');
+
+            addFloatText(`+${earnedScore}`, 'text-white/90');
 
             if (Math.random() < 0.15) {
               const itemTypes = ['hint', 'shuffle', 'time'];
@@ -622,32 +678,37 @@
             }
           }
 
-          setHintActive(null); 
+          setHintActive(null);
           setFoundations(prev => ({
             ...prev,
-            [targetCat]: [...(prev[targetCat] || []), bottomCard]
+            [targetCat]: [...(prev[targetCat] || []), ...draggedCards]
           }));
-          
           setSelectedInfo(null);
           setColumns(prev => {
             const newCols = [...prev];
-            newCols[colIndex] = newCols[colIndex].slice(0, -1);
+            newCols[colIndex] = newCols[colIndex].slice(0, cardIndex);
             return newCols;
           });
 
         } else {
           playSound('error');
-          setWrongId(bottomCard.id);
+          setWrongStack({ colIndex, cardIndex });
           setCombo(0);
           setSelectedInfo(null);
-          setTimeout(() => setWrongId(null), 400);
+          setTimeout(() => setWrongStack(null), 400);
         }
       }, [columns, combo, gameState, hintedCards, unlockWord, addFloatText]);
 
-      const { activeElement, handleTouchMove, handleTouchEnd } = useTouchDrag((id, targetCat) => {
-        const foundColIndex = columns.findIndex(col => col.length > 0 && col[col.length - 1].id === id);
-        if (foundColIndex !== -1) {
-          handleMatch(id, foundColIndex, targetCat);
+      const { activeElement, handleTouchMove, handleTouchEnd } = useTouchDrag((sourceInfo, targetElement) => {
+        if (!sourceInfo) return;
+        const catEl = targetElement?.closest('[data-category]');
+        const colEl = targetElement?.closest('[data-col-index]');
+
+        if (catEl) {
+           handleMatch(sourceInfo.colIndex, sourceInfo.cardIndex, catEl.dataset.category);
+        } else if (colEl) {
+           const targetColIndex = parseInt(colEl.dataset.colIndex, 10);
+           handleMoveToColumn(sourceInfo.colIndex, sourceInfo.cardIndex, targetColIndex);
         }
       });
 
@@ -687,34 +748,27 @@
         }
       }, [items, gameState, columns, addFloatText]);
 
-      const handleDragStart = (e, wordId, colIndex) => {
+      const handleDragStart = (e, wordId, colIndex, cardIndex) => {
         playSound('grab');
-        e.dataTransfer.setData('application/json', JSON.stringify({ id: wordId, colIndex }));
-        setSelectedInfo({ id: wordId, colIndex });
-      };
-
-      const handleDrop = (e, targetCat) => {
-        e.preventDefault();
-        try {
-          const data = JSON.parse(e.dataTransfer.getData('application/json'));
-          if (data && data.id !== undefined && data.colIndex !== undefined) {
-            handleMatch(data.id, data.colIndex, targetCat);
-          }
-        } catch (err) {}
+        e.dataTransfer.setData('application/json', JSON.stringify({ colIndex, cardIndex }));
+        setSelectedInfo({ id: wordId, colIndex, cardIndex });
       };
 
       const handleCategoryClick = (cat) => {
         if (selectedInfo) {
-          handleMatch(selectedInfo.id, selectedInfo.colIndex, cat);
-        } else {
-          playSound('click');
+          handleMatch(selectedInfo.colIndex, selectedInfo.cardIndex, cat);
         }
       };
 
       const totalRemaining = useMemo(() => columns.reduce((acc, col) => acc + col.length, 0), [columns]);
 
       return (
-        <div className="flex-1 flex flex-col h-full w-full relative pt-16" onClick={() => setSelectedInfo(null)}>
+        <div 
+          className="flex-1 flex flex-col h-full w-full relative pt-16" 
+          onClick={() => setSelectedInfo(null)}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <div className="fixed top-0 left-0 w-full z-20" onClick={(e) => e.stopPropagation()}>
             <div className="absolute inset-0 bg-white/10 backdrop-blur-md shadow-sm border-b border-white/10"></div>
             <div className="relative w-full max-w-md mx-auto px-4 py-3 flex items-center justify-between text-white">
@@ -728,18 +782,26 @@
               </div>
               
               <div className="flex flex-col items-center px-4 py-1.5 rounded-2xl">
-                <span className="drop-shadow-xl text-[14px] font-bold text-yellow-300 tracking-wider mb-0.5">{stage}단계</span>
+                <span className="text-[13px] font-bold text-yellow-200 tracking-wider mb-0.5 drop-shadow-sm">{stage}단계</span>
                 <div className="flex items-center gap-1.5">
-                  <Trophy size={16} className="drop-shadow-xl text-yellow-300" />
-                  <span className="drop-shadow-xl font-extrabold text-2xl leading-none text-white">{score}</span>
+                  <Trophy size={18} className="text-yellow-200 drop-shadow-sm" />
+                  <span className="font-extrabold text-2xl leading-none text-white drop-shadow-sm">{score}</span>
                 </div>
               </div>
               
-              <div className={`flex items-center gap-1.5 font-bold px-4 py-2 rounded-2xl ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-yellow-400'}`}>
-                <Clock size={16} className={timeLeft <= 10 ? 'text-red-400' : 'text-yellow-300'} />
-                <span className={`w-10 text-center text-2xl leading-none ${timeLeft <= 10 ? 'text-red-400' : 'text-white'}`}>{timeLeft}</span>
+              <div className={`flex items-center gap-1.5 font-bold px-4 py-2 rounded-2xl ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-yellow-200'}`}>
+                <Clock size={18} className={`${timeLeft <= 10 ? 'text-red-400' : 'text-yellow-200'} drop-shadow-sm`} />
+                <span className={`w-10 text-center text-2xl leading-none drop-shadow-sm ${timeLeft <= 10 ? 'text-red-400' : 'text-white'}`}>{timeLeft}</span>
               </div>
             </div>
+          </div>
+
+          <div className="absolute top-[40%] left-0 w-full h-10 flex items-center justify-center pointer-events-none z-50 shrink-0">
+            {floatTexts.map(ft => (
+              <div key={ft.id} className={`absolute font-black text-2xl drop-shadow-[0_3px_5px_rgba(0,0,0,0.8)] animate-float-up pointer-events-none ${ft.colorClass}`} style={{ left: '50%' }}>
+                {ft.text}
+              </div>
+            ))}
           </div>
 
           <div className="h-10 flex items-center justify-center relative pointer-events-none z-30 mt-2 shrink-0">
@@ -748,11 +810,6 @@
                 <Zap size={16} fill="currentColor" /> {combo} 연속 정답!
               </div>
             )}
-            {floatTexts.map(ft => (
-              <div key={ft.id} className={`absolute font-black text-3xl drop-shadow-lg animate-float-up pointer-events-none ${ft.colorClass}`} style={{ left: '50%', transform: 'translateX(-50%)' }}>
-                {ft.text}
-              </div>
-            ))}
           </div>
 
           <div className="px-4 py-2 z-10 shrink-0" onClick={(e) => e.stopPropagation()}>
@@ -764,7 +821,15 @@
                     key={cat}
                     data-category={cat}
                     onDragOver={(e) => e.preventDefault()}
-                    onDrop={(e) => handleDrop(e, cat)}
+                    onDrop={(e) => {
+                       e.preventDefault();
+                       try {
+                         const data = JSON.parse(e.dataTransfer.getData('application/json'));
+                         if (data && data.colIndex !== undefined && data.cardIndex !== undefined) {
+                            handleMatch(data.colIndex, data.cardIndex, cat);
+                         }
+                       } catch(err){}
+                    }}
                     onClick={() => handleCategoryClick(cat)}
                     className={`
                       relative flex flex-col items-center justify-end w-[23%] aspect-[2/2.5] rounded-xl border-2 transition-all shadow-inner overflow-visible
@@ -781,7 +846,7 @@
                       return (
                         <div 
                           key={card.id + idx} 
-                          className="absolute w-full h-full bg-white rounded-xl border border-slate-300 shadow-[0_2px_4px_rgba(0,0,0,0.3)] flex flex-col items-center justify-center animate-deal"
+                          className="absolute w-full h-full bg-white rounded-xl border border-slate-300 shadow-[0_2px_4px_rgba(0,0,0,0.3)] flex flex-col items-center justify-center"
                           style={{
                             transform: `translate(${idx * 2}px, ${idx * -3}px)`,
                             zIndex: 10 + idx 
@@ -790,7 +855,7 @@
                           {isTop ? (
                             <>
                               <span className="text-3xl drop-shadow-sm mt-1">{card.icon}</span>
-                              <span className="text-xs font-bold text-slate-800 mt-0.5 tracking-tighter">{card.word}</span>
+                              <span className="text-[13px] font-bold text-slate-800 mt-0.5 tracking-tighter">{card.word}</span>
                             </>
                           ) : (
                             <div className="w-full h-full bg-slate-100 rounded-xl opacity-90 border-t border-r border-slate-200"></div>
@@ -810,64 +875,98 @@
             </div>
           </div>
 
-          <div 
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            className="flex-1 px-4 mt-2 relative z-0 w-full max-w-sm mx-auto"
-          >
+          <div className="flex-1 px-4 mt-2 relative z-0 w-full max-w-sm mx-auto">
             <div className="flex justify-between w-full h-full">
-              {columns.map((col, colIndex) => (
-                <div key={`col-${colIndex}`} className="w-[23%] relative h-full">
-                  {col.length === 0 && (
-                    <div className="absolute top-0 w-full aspect-[2/2.5] rounded-xl border-2 border-white/10 bg-black/10"></div>
-                  )}
-                  {col.map((word, cardIndex) => {
-                    const isBottom = cardIndex === col.length - 1; 
-                    const isSelected = selectedInfo?.id === word.id;
-                    const isWrong = wrongId === word.id;
-                    const isHinted = hintActive?.cardId === word.id; 
-                    
-                    return (
-                      <div
-                        id={word.id}
-                        key={word.id}
-                        draggable={isBottom}
-                        onDragStart={(e) => isBottom && handleDragStart(e, word.id, colIndex)}
-                        onTouchStart={() => {
-                           if (isBottom) {
-                             activeElement.current = { id: word.id, colIndex };
-                             playSound('grab');
-                             setSelectedInfo({ id: word.id, colIndex });
-                           }
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (isBottom) {
-                            playSound('grab');
-                            setSelectedInfo({ id: word.id, colIndex });
-                          }
-                        }}
-                        className={`
-                          absolute w-full aspect-[2/2.5] rounded-xl shadow-[0_4px_8px_rgba(0,0,0,0.4)] 
-                          flex flex-col items-center justify-center bg-white select-none transition-all duration-200 animate-deal
-                          ${isBottom ? 'cursor-grab active:cursor-grabbing border-b-4 border-slate-300 hover:brightness-105' : 'brightness-90 border-b-2 border-slate-200'}
-                          ${isSelected ? 'ring-4 ring-yellow-400 -translate-y-3 !brightness-110' : ''}
-                          ${isWrong ? 'animate-shake bg-red-100 ring-4 ring-red-500' : ''}
-                          ${isHinted ? 'animate-ring-pulse !brightness-110' : ''}
-                        `}
-                        style={{
-                          top: `calc(${cardIndex} * clamp(25px, 4vh, 45px))`, 
-                          zIndex: isHinted ? 40 : (isSelected ? 30 : cardIndex),
-                          animationDelay: `${(colIndex * 2 + cardIndex) * 0.03}s` 
-                        }}
-                      >
-                        <div className="text-4xl drop-shadow-sm pointer-events-none">{word.icon}</div>
-                        <div className="font-bold text-base text-slate-800 mt-2 pointer-events-none tracking-tight">{word.word}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
+              {columns.map((col, colIndex) => {
+                const stackableFrom = new Array(col.length).fill(false);
+                if (col.length > 0) {
+                  let currentCat = col[col.length - 1].cat;
+                  for (let i = col.length - 1; i >= 0; i--) {
+                    if (col[i].cat === currentCat) {
+                      stackableFrom[i] = true;
+                    } else {
+                      break;
+                    }
+                  }
+                }
+
+                return (
+                  <div 
+                    key={`col-${colIndex}`} 
+                    className="w-[23%] relative h-full"
+                    data-col-index={colIndex}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      try {
+                        const data = JSON.parse(e.dataTransfer.getData('application/json'));
+                        if (data && data.colIndex !== undefined && data.cardIndex !== undefined) {
+                          handleMoveToColumn(data.colIndex, data.cardIndex, colIndex);
+                        }
+                      } catch(err) {}
+                    }}
+                    onClick={() => {
+                      if (selectedInfo) {
+                        handleMoveToColumn(selectedInfo.colIndex, selectedInfo.cardIndex, colIndex);
+                      }
+                    }}
+                  >
+                    {col.length === 0 && (
+                      <div className="absolute top-0 w-full aspect-[2/2.5] rounded-xl border-2 border-white/10 bg-black/10"></div>
+                    )}
+                    {col.map((word, cardIndex) => {
+                      const isDraggable = stackableFrom[cardIndex];
+                      const isSelectedStack = selectedInfo && selectedInfo.colIndex === colIndex && cardIndex >= selectedInfo.cardIndex;
+                      const isWrongStack = wrongStack && wrongStack.colIndex === colIndex && cardIndex >= wrongStack.cardIndex;
+                      const isHinted = hintActive?.cardId === word.id; 
+                      
+                      return (
+                        <div
+                          id={word.id}
+                          key={word.id}
+                          draggable={isDraggable}
+                          onDragStart={(e) => isDraggable && handleDragStart(e, word.id, colIndex, cardIndex)}
+                          onTouchStart={(e) => {
+                             if (isDraggable) {
+                               activeElement.current = { colIndex, cardIndex, node: e.currentTarget };
+                               playSound('grab');
+                               setSelectedInfo({ id: word.id, colIndex, cardIndex });
+                             }
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (selectedInfo) {
+                               handleMoveToColumn(selectedInfo.colIndex, selectedInfo.cardIndex, colIndex);
+                            } else {
+                               if (isDraggable) {
+                                 playSound('grab');
+                                 setSelectedInfo({ id: word.id, colIndex, cardIndex });
+                               }
+                            }
+                          }}
+                          className={`
+                            absolute w-full aspect-[2/2.5] rounded-xl shadow-[0_4px_8px_rgba(0,0,0,0.4)] 
+                            flex flex-col items-center justify-center bg-white select-none transition-transform duration-200 animate-deal
+                            ${isSelectedStack ? 'ring-4 ring-yellow-400 -translate-y-3 !brightness-110 z-20 shadow-xl' : ''}
+                            ${!isSelectedStack && isDraggable ? 'cursor-grab active:cursor-grabbing border-b-4 border-slate-300 hover:brightness-105' : ''}
+                            ${!isSelectedStack && !isDraggable ? 'brightness-90 border-b-2 border-slate-200' : ''}
+                            ${isWrongStack ? 'animate-shake bg-red-100 ring-4 ring-red-500 z-10' : ''}
+                            ${isHinted ? 'animate-ring-pulse-card !brightness-110' : ''}
+                          `}
+                          style={{
+                            top: `calc(${cardIndex} * clamp(25px, 4vh, 45px))`, 
+                            zIndex: isHinted ? 40 : (isSelectedStack ? 30 : cardIndex),
+                            animationDelay: `${(colIndex * 2 + cardIndex) * 0.03}s` 
+                          }}
+                        >
+                          <div className="text-4xl drop-shadow-sm pointer-events-none">{word.icon}</div>
+                          <div className="font-bold text-base text-slate-800 mt-2 pointer-events-none tracking-tight">{word.word}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -967,7 +1066,7 @@
 
           <div className="p-4 overflow-y-auto flex-1 custom-scrollbar w-full max-w-md mx-auto mt-4">
             <div className="bg-white rounded-3xl shadow-sm p-6 border border-slate-100 flex flex-col items-center justify-center mb-6">
-              <div className="relative overflow-hidden w-28 h-28 bg-yellow-300 rounded-full flex items-center justify-center shadow-inner mb-4">
+              <div className="relative overflow-hidden w-24 h-24 bg-yellow-300 rounded-full flex items-center justify-center shadow-inner mb-4">
                 <div className="text-5xl z-10 drop-shadow-sm">{treeStage.icon}</div>
                 <div className="absolute inset-0 z-20 pointer-events-none animate-[shine_3s_infinite_ease-in-out] bg-gradient-to-r from-transparent via-white/80 to-transparent w-1/2 h-full"></div>
               </div>
@@ -983,7 +1082,7 @@
 
             <p className="text-center text-slate-500 mb-6 text-sm font-bold bg-white p-4 rounded-xl shadow-sm border border-slate-100">
               게임을 플레이하며 새로운 단어와 개념을 모아보세요!<br/>
-              분류를 맞힐 때마다 나무가 자라납니다 🌱
+              분류를 맞힐 때마다 나무가 자라납니다
             </p>
             <div className="bg-white rounded-3xl shadow-sm p-4 border border-slate-100">
               <TreeNode node={treeData} unlockedIds={unlockedWords} depth={0} />
@@ -1074,6 +1173,7 @@
       const [bgmEnabled, setBgmEnabled] = useState(true); 
       const introAudioRef = useRef(null);
       const playAudioRef = useRef(null);
+      const prevScreenRef = useRef(currentScreen);
 
       useEffect(() => {
         introAudioRef.current = new Audio("https://github.com/KOKIM12/k-voca-solitaire/raw/refs/heads/main/intro.mp3");
@@ -1109,7 +1209,11 @@
 
         if (currentScreen === 'title' || currentScreen === 'tree') {
           playAudioRef.current.pause();
-          // 도감 <-> 타이틀 간 이동 시 노래가 끊기지 않도록 일시정지 상태일 때만 play 시도
+          
+          if (prevScreenRef.current === 'game') {
+            introAudioRef.current.currentTime = 0;
+          }
+          
           if (introAudioRef.current.paused) {
             introAudioRef.current.play().catch(e => setBgmEnabled(false));
           }
@@ -1120,6 +1224,8 @@
             playAudioRef.current.play().catch(e => setBgmEnabled(false));
           }
         }
+        
+        prevScreenRef.current = currentScreen;
       }, [bgmEnabled, currentScreen]);
 
       const toggleBgm = useCallback(() => {
