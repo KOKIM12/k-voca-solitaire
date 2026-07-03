@@ -15,6 +15,27 @@
   <!-- Babel CDN -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+  <!-- 모바일 화면 드래그 앤 드롭 지원 폴리필 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0/default.css">
+  <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0/scroll-behaviour.min.js"></script>
+  <script>
+    // 외부 스크립트 비동기 로딩으로 인한 ReferenceError(blob 에러) 완벽 방지
+    let retryCount = 0;
+    function initMobileDragDrop() {
+      if (typeof MobileDragDrop !== 'undefined') {
+        window.addEventListener('touchmove', function() {}, {passive: false});
+        MobileDragDrop.polyfill({
+          dragImageTranslateOverride: MobileDragDrop.scrollBehaviourDragImageTranslateOverride
+        });
+      } else if (retryCount < 20) {
+        retryCount++;
+        setTimeout(initMobileDragDrop, 100);
+      }
+    }
+    initMobileDragDrop();
+  </script>
+
   <!-- 통합 스타일링 -->
   <style>
     @font-face {
@@ -105,15 +126,15 @@
       animation: pop-twinkle 3s infinite ease-in-out;
     }
     
-    @keyframes ring-pulse {
-      0%, 100% { box-shadow: 0 0 0 4px rgba(250, 204, 21, 1); }
-      50% { box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.3); }
+    @keyframes ring-pulse-cat {
+      0%, 100% { box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.05), 0 0 0 4px rgba(250, 204, 21, 1); }
+      50% { box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.05), 0 0 0 4px rgba(250, 204, 21, 0.3); }
     }
-    .animate-ring-pulse {
-      animation: ring-pulse 1s ease-in-out infinite;
+    .animate-ring-pulse-cat {
+      animation: ring-pulse-cat 1s ease-in-out infinite;
       z-index: 50;
     }
-
+    
     @keyframes ring-pulse-card {
       0%, 100% { box-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 0 4px rgba(250, 204, 21, 1); }
       50% { box-shadow: 0 4px 8px rgba(0,0,0,0.4), 0 0 0 4px rgba(250, 204, 21, 0.3); }
@@ -229,11 +250,11 @@
       { id: 'w3', word: '포도', cat: '과일', icon: '🍇', stage: 1, path: ['생물', '과일'] },
       { id: 'w4', word: '딸기', cat: '과일', icon: '🍓', stage: 1, path: ['생물', '과일'] },
       { id: 'w5', word: '수박', cat: '과일', icon: '🍉', stage: 1, path: ['생물', '과일'] },
-      { id: 'w6', word: '강아지', cat: '동물', icon: '🐶', stage: 1, path: ['생물', '동물'] },
-      { id: 'w7', word: '고양이', cat: '동물', icon: '🐱', stage: 1, path: ['생물', '동물'] },
-      { id: 'w8', word: '사자', cat: '동물', icon: '🦁', stage: 1, path: ['생물', '동물'] },
-      { id: 'w9', word: '코끼리', cat: '동물', icon: '🐘', stage: 1, path: ['생물', '동물'] },
-      { id: 'w10', word: '기린', cat: '동물', icon: '🦒', stage: 1, path: ['생물', '동물'] },
+      { id: 'w126', word: '시', cat: '글', icon: '📝', stage: 1, path: ['개념', '글'] },
+      { id: 'w127', word: '소설', cat: '글', icon: '📖', stage: 1, path: ['개념', '글'] },
+      { id: 'w128', word: '극본', cat: '글', icon: '🎭', stage: 1, path: ['개념', '글'] },
+      { id: 'w129', word: '전기문', cat: '글', icon: '👤', stage: 1, path: ['개념', '글'] },
+      { id: 'w130', word: '기행문', cat: '글', icon: '🎒', stage: 1, path: ['개념', '글'] },
       { id: 'w11', word: '자동차', cat: '탈것', icon: '🚗', stage: 1, path: ['무생물', '탈것'] },
       { id: 'w12', word: '비행기', cat: '탈것', icon: '✈️', stage: 1, path: ['무생물', '탈것'] },
       { id: 'w13', word: '기차', cat: '탈것', icon: '🚂', stage: 1, path: ['무생물', '탈것'] },
@@ -413,14 +434,14 @@
             {bgmEnabled ? <Volume2 size={24} /> : <VolumeX size={24} />}
           </button>
 
-          <div className="absolute top-0 left-0 w-full h-[65%] pointer-events-none overflow-hidden z-0">
-            <div className="absolute top-[12%] left-[10%] text-white animate-pop-twinkle" style={{ animationDelay: '0s', animationDuration: '3.5s' }}><Star size={24} fill="currentColor"/></div>
-            <div className="absolute top-[25%] right-[15%] text-yellow-300 animate-pop-twinkle" style={{ animationDelay: '1.2s', animationDuration: '4s' }}><Sparkle size={32} fill="currentColor"/></div>
-            <div className="absolute top-[45%] left-[18%] text-yellow-200 animate-pop-twinkle" style={{ animationDelay: '2.5s', animationDuration: '3.8s' }}><Star size={18} fill="currentColor"/></div>
-            <div className="absolute top-[55%] right-[12%] text-white animate-pop-twinkle" style={{ animationDelay: '0.8s', animationDuration: '4.2s' }}><Sparkle size={24} fill="currentColor"/></div>
-            <div className="absolute bottom-[20%] left-[15%] text-white animate-pop-twinkle" style={{ animationDelay: '1.5s', animationDuration: '3.6s' }}><Sparkle size={28} fill="currentColor"/></div>
-            <div className="absolute bottom-[5%] right-[22%] text-yellow-300 animate-pop-twinkle" style={{ animationDelay: '0.3s', animationDuration: '4.5s' }}><Star size={24} fill="currentColor"/></div>
-            <div className="absolute bottom-[10%] left-[45%] text-yellow-100 animate-pop-twinkle" style={{ animationDelay: '2s', animationDuration: '4s' }}><Star size={16} fill="currentColor"/></div>
+          <div className="absolute top-0 left-0 w-full h-[50%] pointer-events-none overflow-hidden z-0">
+            <div className="absolute top-[10%] left-[8%] text-white animate-pop-twinkle" style={{ animationDelay: '0s', animationDuration: '3.5s' }}><Star size={24} fill="currentColor"/></div>
+            <div className="absolute top-[20%] right-[10%] text-yellow-300 animate-pop-twinkle" style={{ animationDelay: '1.2s', animationDuration: '4s' }}><Sparkle size={32} fill="currentColor"/></div>
+            <div className="absolute top-[35%] left-[12%] text-yellow-200 animate-pop-twinkle" style={{ animationDelay: '2.5s', animationDuration: '3.8s' }}><Star size={18} fill="currentColor"/></div>
+            <div className="absolute top-[40%] right-[15%] text-white animate-pop-twinkle" style={{ animationDelay: '0.8s', animationDuration: '4.2s' }}><Sparkle size={24} fill="currentColor"/></div>
+            <div className="absolute top-[15%] left-[45%] text-white animate-pop-twinkle" style={{ animationDelay: '1.5s', animationDuration: '3.6s' }}><Sparkle size={28} fill="currentColor"/></div>
+            <div className="absolute bottom-[5%] right-[35%] text-yellow-300 animate-pop-twinkle" style={{ animationDelay: '0.3s', animationDuration: '4.5s' }}><Star size={24} fill="currentColor"/></div>
+            <div className="absolute bottom-[10%] left-[30%] text-yellow-100 animate-pop-twinkle" style={{ animationDelay: '2s', animationDuration: '4s' }}><Star size={16} fill="currentColor"/></div>
           </div>
 
           <div className="w-full flex flex-col items-center -mt-8 shrink-0 relative z-0">
@@ -519,6 +540,7 @@
       const [categories, setCategories] = useState([]); 
       const [foundations, setFoundations] = useState({}); 
       const [isInitialized, setIsInitialized] = useState(false);
+      const [isInitialDeal, setIsInitialDeal] = useState(true);
       
       const [score, setScore] = useState(0);
       const [combo, setCombo] = useState(0); 
@@ -565,8 +587,10 @@
         setGameState('playing');
         setSelectedInfo(null);
         setWrongStack(null);
+        setIsInitialDeal(true);
         
         setTimeout(() => setIsInitialized(true), 100);
+        setTimeout(() => setIsInitialDeal(false), 1200);
       }, [stage]);
 
       useEffect(() => {
@@ -658,7 +682,6 @@
 
           if (isHinted) {
             setCombo(0);
-            addFloatText(`통과! (도감 미수집)`, 'text-slate-300');
           } else {
             draggedCards.forEach(card => {
                currentCombo += 1;
@@ -674,7 +697,6 @@
               const itemTypes = ['hint', 'shuffle', 'time'];
               const dropType = itemTypes[Math.floor(Math.random() * itemTypes.length)];
               setItems(prev => ({ ...prev, [dropType]: prev[dropType] + 1 }));
-              addFloatText(`도움말!`, 'text-sky-300');
             }
           }
 
@@ -735,6 +757,7 @@
             setTimeout(() => setHintActive(null), 2500);
           }
         } else if (type === 'shuffle') {
+          setIsInitialDeal(true); // 섞기 아이템 사용 시 배분 모션 활성화
           const remaining = columns.flat();
           const shuffled = shuffleArray(remaining);
           const numCols = columns.length;
@@ -742,11 +765,11 @@
           shuffled.forEach((w, i) => newCols[i % numCols].push(w));
           setColumns(newCols);
           setSelectedInfo(null);
+          setTimeout(() => setIsInitialDeal(false), 1200); // 모션 완료 후 해제
         } else if (type === 'time') {
           setTimeLeft(prev => prev + 10);
-          addFloatText('+10초', 'text-blue-300');
         }
-      }, [items, gameState, columns, addFloatText]);
+      }, [items, gameState, columns]);
 
       const handleDragStart = (e, wordId, colIndex, cardIndex) => {
         playSound('grab');
@@ -781,17 +804,13 @@
                 </button>
               </div>
               
-              <div className="flex flex-col items-center px-4 py-1.5 rounded-2xl">
-                <span className="text-[13px] font-bold text-yellow-200 tracking-wider mb-0.5 drop-shadow-sm">{stage}단계</span>
-                <div className="flex items-center gap-1.5">
-                  <Trophy size={18} className="text-yellow-200 drop-shadow-sm" />
-                  <span className="font-extrabold text-2xl leading-none text-white drop-shadow-sm">{score}</span>
-                </div>
+              <div className="flex items-center gap-1.5 px-4 py-1.5 rounded-2xl">
+                <span className="text-lg font-bold text-yellow-400 tracking-wider drop-shadow-md">{stage}단계</span>
               </div>
               
-              <div className={`flex items-center gap-1.5 font-bold px-4 py-2 rounded-2xl ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-yellow-200'}`}>
-                <Clock size={18} className={`${timeLeft <= 10 ? 'text-red-400' : 'text-yellow-200'} drop-shadow-sm`} />
-                <span className={`w-10 text-center text-2xl leading-none drop-shadow-sm ${timeLeft <= 10 ? 'text-red-400' : 'text-white'}`}>{timeLeft}</span>
+              <div className={`flex items-center gap-1.5 font-bold px-4 py-2 rounded-2xl ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-yellow-400'}`}>
+                <Clock size={18} className={`${timeLeft <= 10 ? 'text-red-400' : 'text-yellow-400'} drop-shadow-md`} />
+                <span className={`w-10 text-center text-2xl leading-none drop-shadow-md ${timeLeft <= 10 ? 'text-red-400' : 'text-white'}`}>{timeLeft}</span>
               </div>
             </div>
           </div>
@@ -833,7 +852,7 @@
                     onClick={() => handleCategoryClick(cat)}
                     className={`
                       relative flex flex-col items-center justify-end w-[23%] aspect-[2/2.5] rounded-xl border-2 transition-all shadow-inner overflow-visible
-                      ${hintActive?.cat === cat ? 'bg-black/10 animate-ring-pulse' : 'border-white/20 bg-black/10 hover:bg-white/10'}
+                      ${hintActive?.cat === cat ? 'bg-black/10 animate-ring-pulse-cat' : 'border-white/20 bg-black/10 hover:bg-white/10'}
                       ${selectedInfo ? 'border-dashed border-white/60 cursor-pointer bg-white/5' : 'border-solid'}
                     `}
                   >
@@ -945,22 +964,21 @@
                             }
                           }}
                           className={`
-                            absolute w-full aspect-[2/2.5] rounded-xl shadow-[0_4px_8px_rgba(0,0,0,0.4)] 
-                            flex flex-col items-center justify-center bg-white select-none transition-transform duration-200 animate-deal
-                            ${isSelectedStack ? 'ring-4 ring-yellow-400 -translate-y-3 !brightness-110 z-20 shadow-xl' : ''}
-                            ${!isSelectedStack && isDraggable ? 'cursor-grab active:cursor-grabbing border-b-4 border-slate-300 hover:brightness-105' : ''}
-                            ${!isSelectedStack && !isDraggable ? 'brightness-90 border-b-2 border-slate-200' : ''}
+                            absolute w-full aspect-[2/2.5] rounded-xl overflow-hidden flex flex-col items-center justify-center bg-white select-none transition-all transform-gpu ${isInitialDeal ? 'animate-deal duration-200' : 'duration-0'}
+                            ${isSelectedStack ? 'ring-4 ring-yellow-400 border border-transparent -translate-y-3 !brightness-110 z-20 shadow-xl' : 'shadow-[0_4px_8px_rgba(0,0,0,0.4)] border-2 border-slate-200'}
+                            ${!isSelectedStack && isDraggable ? 'cursor-grab active:cursor-grabbing border-b-4 border-b-slate-300 hover:brightness-105' : ''}
+                            ${!isSelectedStack && !isDraggable ? 'brightness-90 border-b-2 border-b-slate-300' : ''}
                             ${isWrongStack ? 'animate-shake bg-red-100 ring-4 ring-red-500 z-10' : ''}
                             ${isHinted ? 'animate-ring-pulse-card !brightness-110' : ''}
                           `}
                           style={{
                             top: `calc(${cardIndex} * clamp(25px, 4vh, 45px))`, 
                             zIndex: isHinted ? 40 : (isSelectedStack ? 30 : cardIndex),
-                            animationDelay: `${(colIndex * 2 + cardIndex) * 0.03}s` 
+                            animationDelay: isInitialDeal ? `${(colIndex * 2 + cardIndex) * 0.03}s` : '0s'
                           }}
                         >
                           <div className="text-4xl drop-shadow-sm pointer-events-none">{word.icon}</div>
-                          <div className="font-bold text-base text-slate-800 mt-2 pointer-events-none tracking-tight">{word.word}</div>
+                          <div className="font-bold text-sm text-slate-800 mt-2 pointer-events-none tracking-tight">{word.word}</div>
                         </div>
                       );
                     })}
@@ -971,10 +989,15 @@
           </div>
 
           <div className="px-4 py-5 flex items-end justify-between z-10 shrink-0" onClick={(e) => e.stopPropagation()}>
-            <div className="text-white/90 font-bold text-base bg-black/30 px-5 py-2.5 rounded-full backdrop-blur-sm shadow-inner border border-white/10">
-              남은 단어 : <span className="text-yellow-300 ml-1">{totalRemaining}</span>
+            <div className="flex flex-col items-start gap-2">
+              <div className="text-yellow-400 font-extrabold text-3xl drop-shadow-md px-2 tracking-tight">
+                {score} <span className="text-xl">점</span>
+              </div>
+              <div className="text-white/90 font-bold text-sm sm:text-base bg-black/30 px-4 py-2 rounded-full backdrop-blur-sm shadow-inner border border-white/10">
+                남은 단어 : <span className="text-yellow-300 ml-1">{totalRemaining}</span>
+              </div>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 mb-1">
               <ItemButton icon={<Zap size={20}/>} count={items.hint} onClick={() => useItem('hint')} />
               <ItemButton icon={<RefreshCw size={20}/>} count={items.shuffle} onClick={() => useItem('shuffle')} />
               <ItemButton icon={<Clock size={20}/>} count={items.time} onClick={() => useItem('time')} />
@@ -1182,7 +1205,7 @@
 
         playAudioRef.current = new Audio("https://github.com/KOKIM12/k-voca-solitaire/raw/refs/heads/main/play.mp3");
         playAudioRef.current.loop = true;
-        playAudioRef.current.volume = 0.2;
+        playAudioRef.current.volume = 0.35;
         
         const playPromise = introAudioRef.current.play();
         if (playPromise !== undefined) {
